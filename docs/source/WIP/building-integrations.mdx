@@ -1,4 +1,7 @@
-# Integration Guide
+---
+title: Building Integrations for Apollo Server
+description: "testing"
+---
 
 Apollo Server 4 comes with a well-defined API for processing HTTP requests and responses.
 
@@ -21,9 +24,9 @@ This is often down by passing the server instance to your framework specific mid
   app.use(expressMiddleware(server));
 ```
 
-Your integration is responsible for setting up any bodyparser or cors configuration itself.
+Your integration is responsible for setting up any [body-parser](https://www.npmjs.com/package/body-parser) or [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) configuration itself.
 
 ## Here is a link to the apollo-express-middleware use it as reference:
 
-<!-- TODO: Insert GH Link to express integration  -->
+<!-- TODO: Insert GH Link to express middleware  -->
 packages/server/src/express/index.ts

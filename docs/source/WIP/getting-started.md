@@ -1,6 +1,5 @@
-
 ---
-title: Get started with Apollo Server 4 (Alpha)
+title: Getting Started with Apollo Server
 ---
 
 This tutorial helps you:
@@ -231,7 +230,7 @@ We can now execute GraphQL queries on our server. To execute our first query, we
 
 Visit `http://localhost:4000` in your browser. Apollo Server's default landing page appears:
 
-<!-- TODO check this image -->
+<!-- TODO add and double check all these images before publishing -->
 <img class="screenshot" src="./images/as-landing-page.jpg" alt="Apollo Server default landing page" width="350"/>
 
 Click **Query your server** to open Sandbox.
@@ -292,3 +291,6 @@ of schemas, resolvers, and deployment:
 * [Deploying with Heroku](./deployment/heroku/)
 
 Want to learn how to modularize and scale a GraphQL API?  Check out the [Apollo Federation Docs](/federation) to learn how a federated architecture can create a unified *supergraph* that combines multiple GraphQL APIs.
+
+
+

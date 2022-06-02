@@ -1,0 +1,20 @@
+{
+  "title": "Apollo Server",
+  "version": "v4 (Alpha)",
+  "algoliaFilters": [
+    "docset:server",
+    [
+      "docset:react",
+      "docset:federation"
+    ]
+  ],
+  "sidebar": {
+    "Introduction": "/",
+      "New in v4": {
+      "Migrating to Apollo Server 4": "/WIP/migration",
+      "Changelog": "https://github.com/apollographql/apollo-server/blob/main/CHANGELOG.md"
+    },
+    "Get started": "/WIP/getting-started",
+    "Building an Integration": "/WIP/building-integrations"
+  }
+}
