@@ -663,14 +663,21 @@ with this new API. That's not because we think people using Express should
 use the API; it just means we were able to ensure that the tests could potentially work with the new API.  This helped us discover that (in the start-in-background case) `executeHTTPGraphQLRequest` throws rather than returns an error response if startup failed, which we should fix in a subsequent PR.
 
 
-# Upcoming Stuff to Cover:
-- Replace implementations of the cache interface with `keyv`
-We no longer maintain `apollo-server-cache-memcached` or `apollo-server-cache-redis`. The interfaces and classes for `apollo-server-caching` are now in `@apollo/utils.keyvaluecache`
-We now maintain (`@apollo/utils.keyv`) which wraps Keyv and lets you use their implementation of memcached and redis bindings (among others).
+### New wrapper around `keyV`
+We've decided to continue maintaining our own cache interface and instead offer a small wrapper around [`keyv`](https://www.npmjs.com/package/keyv) that users can choose to use themselves. This nicely guarantees our API regardless of the choices made by `keyv` (we just have to update the wrapper if anything changes).
+
+`Cache` and `keyv` binding can now be found in the utils monorepo, published under the packages:
+
+- `@apollo/utils.keyvaluecache`
+- `@apollo/utils.keyvadapter`
+
+We no longer maintain `apollo-server-cache-memcached` or `apollo-server-cache-redis`.
+
 Existing implementations of `KeyValueCache` should continue to work.
 - Mention that specifically redis users currently get a 300s default TTL, which will change when they move to Keyv. Our other cache implementations don't do this. This may or may not be worth mentioning since they should be reading the documentation for @keyv/redis when they make the switch and should configure it to their needs. But it wouldn't hurt to at least point it out.
 - Mention that default cache is now bounded, `cache: 'bounded'` can be deleted
 
+# Upcoming Stuff to Cover:
 - Explicit support in core for serverless-style startup error handling
 - Move other plugins to their own repositories
 - Change usage reporting defaults backwards-incompatibly to send less data
