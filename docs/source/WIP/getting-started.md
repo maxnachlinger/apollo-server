@@ -102,7 +102,7 @@ Finally we'll add a `type` and `scripts` to the `package.json` file you previous
 }
 ```
 
-Setting your project's [`type` to `module`](https://nodejs.org/api/packages.html#approach-1-use-an-es-module-wrapper) transpiles ES module sources into `CommonJS`, enabling you to use a top-level [`await`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function).
+Setting your project's [`type` to `module`](https://nodejs.org/api/packages.html#approach-1-use-an-es-module-wrapper) to transpile ES module sources into `CommonJS`, enabling you to use a top-level [`await`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function).
 
 ## Step 3: Define your GraphQL schema
 
