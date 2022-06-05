@@ -95,16 +95,12 @@ The `GraphQLExecutionResult` type (returned by `executor`) has been replaced by 
 In Apollo Server 4 we removed the dependency on `@apollographql/apollo-tooling`, in the process removing the `__resolveObject` pseudo-resolver. The `__resolveObject` function was a predecessor to
 the [`__resolveReference`](/federation/api/apollo-subgraph/#__resolvereference) method.
 
-<<<<<<< HEAD:WIP/migration.mdx
 
 ### `formatResponse`
 
 Removed `formatResponse` hook. The `willSendResponse` plugin API can accomplish similar goals. TODO show a replacement. TODO show example
 
 ### Remove features that wrap framework-specific libraries
-=======
-### Wrapping for framework-specific libraries
->>>>>>> 24859dd38 (Start building out docs structure):docs/source/WIP/migration.mdx
 
 Apollo Server 3 includes core-maintained bindings for many additional web frameworks and serverless environments. These additional integrations are all maintained by the Apollo Server core team, who might not have the practical experience running servers that use most of these frameworks.
 
@@ -125,7 +121,6 @@ Removed most web framework integrations from the core package:
 
 > We are looking for volunteers to maintain these integrations! See the [issues with the 'integration-collaborators' label](https://github.com/apollographql/apollo-server/labels/integration-collaborators) to join the discussion about your favorite web framework today.
 
-<<<<<<< HEAD:WIP/migration.mdx
 ### Remove body-parser & CORS wrapping
 In Apollo Server 4, framework integration functions won't try to wrap these basic framework-specific libraries. If you want to use our Express middleware, you'll be required to use the standard body-parser middleware yourself.
 
@@ -137,9 +132,6 @@ In Apollo Server 4, framework integration functions won't try to wrap these basi
 Apollo Server 4's new `startStandaloneServer` function(the replacement for the batteries-included `apollo-server` package) will still include both the `body-parser` and `cors` packages, but you can not configure those options.
 
 ### Removed health checks
-=======
-### Health checks
->>>>>>> 24859dd38 (Start building out docs structure):docs/source/WIP/migration.mdx
 
 Load balancers often use health checks to determine if a server is available and ready to serve traffic. In Apollo Server 3 the health check feature supported a simple HTTP-level health check that was enabled by default and would always return the 200 status code. In Apollo Server 4 we removed the health checks feature.
 
@@ -153,14 +145,7 @@ https://your.server/?query=%7B__typename%7D
 
 If for some reason running this query is not an acceptable health check, folks integrating Apollo Server into a web framework can define their own health check via their web framework directly.
 
-<<<<<<< HEAD:WIP/migration.mdx
 ## Removed path parsing
-=======
-<!-- TODO: check into this and confirm we removed them -->
-We may consider leaving health check support in ApolloServerStandalone (where you can't easily add your own HTTP path handlers), if compelling arguments for why it's superior to using `?query=%7B__typename%7D` as health check are provided.
-
-### Path parsing
->>>>>>> 24859dd38 (Start building out docs structure):docs/source/WIP/migration.mdx
 Path parsing has been removed from Apollo Server 4. To further simplify the Apollo Server 4 API, if you'd like to mount your GraphQL server at a specified URL you can do so using your framework's specific middleware, like so:
 
 <!-- TODO: Insert example here using path parsing with express-middleware -->
@@ -289,7 +274,6 @@ You can write:
     });
 ```
 
-<<<<<<< HEAD:WIP/migration.mdx
 ### Local landing page defaults to embedded
 
 The default landing page for local development now is an embedded Apollo Sandbox which allows you to run operations with no CORS setup required. To return to the AS3 default of a splash page linking to Apollo Sandbox, pass `ApolloServerPluginLandingPageLocalDefault({embed: false})`.
@@ -310,10 +294,6 @@ If `resolveOperation` or the `execute` function throws, the error will be render
 
 ### CSRF prevention (new in AS3.7) is on by default
 By default, CSRF prevention is turned on in Apollo Server 4. For more information about CSRF prevention and CORS, see [Configuring CORS](/apollo-server/security/cors).
-=======
-### CSRF prevention on by default
-CSRF prevention was added to Apollo Server 3.7+, and is now on by default in Apollo Server 4. For more information about CSRF prevention and CORS, see [Configuring CORS](/apollo-server/security/cors).
->>>>>>> 24859dd38 (Start building out docs structure):docs/source/WIP/migration.mdx
 
 ### ApolloServer’s generic argument is your context object type
 Currently ApolloServer is genericized on the _arguments_ to the context function, rather the actual context object itself. We don't get type inference into resolvers, inline plugins, etc.
@@ -393,7 +373,6 @@ We combined the following packages into a single `@apollo/server` package:
 - apollo-server-express
 - apollo-server-errors
 
-<<<<<<< HEAD:WIP/migration.mdx
 ### Express API is now a function `expressMiddleware` instead of getMiddleware/applyMiddleware methods on a subclass of ApolloServer
 
 <!-- link to /apollo-server/packages/server/src/express/index.ts -->
@@ -404,11 +383,6 @@ Moreover, there is no subclassing of ApolloServer at all.
 ## Express middleware no longer tries to also work with Express’ predecessor project “Connect”
 
 If anybody needs [Connect middleware](https://github.com/senchalabs/connect) they can add it themselves.
-=======
-<!-- Combined these two and could be renamed @apollo/server-types eventually -->
-- apollo-server-plugin-base
-- apollo-server-types
->>>>>>> 24859dd38 (Start building out docs structure):docs/source/WIP/migration.mdx
 
 <!-- This ended up being its own package -->
 - apollo-reporting-protobuf
@@ -416,14 +390,10 @@ If anybody needs [Connect middleware](https://github.com/senchalabs/connect) the
 ### Operation registry plugin has a new name
 Use `@apollo/server-plugin-operation-registry` instead.
 
-<<<<<<< HEAD:WIP/migration.mdx
 ## HTTP handling changes
 
 ### `variables` and `extensions` should not be doubly-encoded
 
-=======
-### HTTP handling changes
->>>>>>> 24859dd38 (Start building out docs structure):docs/source/WIP/migration.mdx
 In JSON-encoded POST bodies, we expect variables and extensions (if provided) to be objects, not strings containing JSON strings of objects:
 
 This works:
@@ -458,15 +428,12 @@ Remove debug field from GraphQLRequestContext.
 
 Remove persistedQueries field from GraphQLServerContext
 
-<<<<<<< HEAD:WIP/migration.mdx
 `GraphQLResponse` object (eg `requestContext.response`) has been refactored: the `data`, `errors`, and `extensions` fields are on a `result` sub-object. (This will change further for incremental delivery.) `data` and `extensions` are now `Record<string, unknown>` rather than `Record<string, any>` so more casts may be needed. `GraphQLRequestContext.response` and `GraphQLResponse.http` are now always set.
 
 requestDidStart hooks are called in parallel rather than in series.
 
 ## New APIs
 
-=======
->>>>>>> 24859dd38 (Start building out docs structure):docs/source/WIP/migration.mdx
 ### `addPlugin` function
 
 Apollo Server 4 introduces a new public function on the `ApolloServer` class, `addPlugin`. The `addPlugin` function enables you to add plugins to `ApolloServer` _before_ you start a server (i.e., before calling `server.start()`).

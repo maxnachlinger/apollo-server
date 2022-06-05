@@ -26,6 +26,7 @@ npm install -g typescript
   ```bash
     mkdir graphql-server-example
     cd graphql-server-example
+    mkdir src
   ```
 
 2. Initialize a new Node.js project with `npm` (or another package manager you
@@ -43,11 +44,11 @@ Applications that run Apollo Server require two top-level dependencies:
 * [`@apollo/server`](https://www.npmjs.com/package/@apollo/server) is the core library for Apollo Server itself, which helps you define the shape of your data and how to fetch it.
 * [`graphql`](https://npm.im/graphql) is the library used to build a GraphQL schema and execute queries against it.
 
-Run the following command to install both of these dependencies and save them in
+Run the following command to install all of these dependencies and save them in
 your project's `node_modules` directory:
 
 ```bash
-npm install @apollo/server graphql
+npm install @apollo/server graphql cors
 ```
 
 Also create an empty `index.ts` file in your project's root directory:
@@ -87,9 +88,9 @@ Inside your new `tsconfig.json` file add the following configuration:
 }
 ```
 
-For more information on any of the compiler options above check out the [TypeScript Compiler docs](https://www.typescriptlang.org/tsconfig).
+For more information on the compiler options above check out the [TypeScript Compiler documentation](https://www.typescriptlang.org/tsconfig).
 
-Finally we'll add a `type` and `script` to the `package.json` file you previously created:
+Finally we'll add a `type` and `scripts` to the `package.json` file you previously created:
 ```json title="package.json"
 {
   // ...etc.
@@ -101,19 +102,16 @@ Finally we'll add a `type` and `script` to the `package.json` file you previousl
 }
 ```
 
-Setting your project's type to `module` will enable you to use a top-level [`await`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function), which can make your code easier to read.
+Setting your project's [`type` to `module`](https://nodejs.org/api/packages.html#approach-1-use-an-es-module-wrapper) transpiles ES module sources into `CommonJS`, enabling you to use a top-level [`await`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function).
 
 ## Step 3: Define your GraphQL schema
 
-Every GraphQL server (including Apollo Server) uses a **schema**
-to define the structure of data that clients can query.
-In this example, we'll create a server for querying a collection
-of books by title and author.
+Every GraphQL server (including Apollo Server) uses a **schema** to define the structure of data that clients can query. In this example, we'll create a server for querying a collection of books by title and author.
 
-Open `index.ts` in your preferred editor and paste the following into it:
+Open `index.ts` in your preferred code editor and paste the following into it:
 
 ```js title="index.ts"
-const { ApolloServer, standaloneServer, gql } = require('@apollo/server');
+const { ApolloServer, startStandaloneServer, gql } = require('@apollo/server');
 
 // A schema is a collection of type definitions (hence "typeDefs")
 // that together define the "shape" of queries that are executed against
@@ -142,9 +140,8 @@ This snippet defines a simple, valid GraphQL schema. Clients will be able to exe
 
 Now that we've defined the _structure_ of our data, we can define the data itself.
 
-Apollo Server can fetch data from any source you connect to (including
-a database, a REST API, a static object storage service, or even another GraphQL
-server). For the purposes of this tutorial, we'll just hardcode some example data.
+Apollo Server can fetch data from any source you connect to (including a database, a REST API, a static object storage service, or even another GraphQL
+server). For the purposes of this tutorial, we'll hardcode our example data.
 
 Add the following to the bottom of `index.ts`:
 
@@ -183,26 +180,23 @@ const resolvers = {
 
 ## Step 6: Create an instance of `ApolloServer`
 
-We've defined our schema, data set, and resolver. Now we just need to provide
+We've defined our schema, data set, and resolver. Now we need to provide
 this information to Apollo Server when we initialize it.
 
 Add the following to the bottom of `index.ts`:
 
 ```js title="index.ts"
 // The ApolloServer constructor requires two parameters: your schema
-// definition and your set of resolvers and returns an ApolloServerStandalone instance.
+// definition and your set of resolvers.
+// and returns an ApolloServerStandalone instance.
 const apolloServerInstance = new ApolloServer({
   typeDefs,
   resolvers,
 });
 
-// Passing in your newly created ApolloServerStandalone instance to the
-// standaloneServer function will enable you to start listening to your server
-const { url } = await standaloneServer(apolloServerInstance, {
-  async context() {
-    return { token: 'hello' };
-  },
-}).listen({ port: 4000 });
+// Passing your ApolloServer instance to the `startStandaloneServer`
+// function will enable you to start listening to your server
+const { url } = await startStandaloneServer(apolloServerInstance, { listen: { port: 4000 } });
 
 console.log(`🚀  Server ready at: ${url}`);
 ```
@@ -219,7 +213,7 @@ npm start
 After TypeScript finishes compiling, you should see the following output:
 
 ```
-🚀 ApolloServer listening at: http://localhost:4000/
+🚀  Server ready at: http://localhost:4000/
 ```
 
 We're up and running!
@@ -267,8 +261,8 @@ Paste this string into the Operations panel and click the blue button in the upp
 
 <img class="screenshot" src="./images/sandbox-response.jpg" width="400" alt="Sandbox response panel"/>
 
-<!-- TODO: check if this is true -->
-> **Note:** If your server is deployed to an environment where `NODE_ENV` is set to `production`, introspection is **disabled** by default. This prevents Apollo Sandbox from working properly. To enable introspection, set `introspection: true` in [the options to `ApolloServer`'s constructor](./api/apollo-server/#constructor).
+<!-- TODO: Add link back in to constructor -->
+> **Note:** If your server is deployed to an environment where `NODE_ENV` is set to `production`, introspection is **disabled** by default. This prevents Apollo Sandbox from working properly. To enable introspection, set `introspection: true` in the options to `ApolloServer`'s constructor.
 
 One of the most important concepts of GraphQL is that clients can choose to query _only for the fields they need_. Delete `author` from the query string and execute it again. The response updates to include only the `title` field for each book!
 
