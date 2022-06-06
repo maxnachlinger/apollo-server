@@ -470,11 +470,7 @@ enum CacheControlScope {
 ```
 
 ### Combine many packages into a single @apollo/server
-We combined the following packages into a single `@apollo/server` package:
-- apollo-server-core
-- apollo-server (the "batteries-included" package)
-- apollo-server-express
-- apollo-server-errors
+Apollo Server 4 was designed to make a developer's experience simpler at every turn. To this end, Apollo Server 4 takes many previously separate npm packages and combines them all into a single `@apollo/server` package.
 
 ### Express API is now a function `expressMiddleware` instead of getMiddleware/applyMiddleware methods on a subclass of ApolloServer
 
@@ -487,8 +483,8 @@ Moreover, there is no subclassing of ApolloServer at all.
 
 If anybody needs [Connect middleware](https://github.com/senchalabs/connect) they can add it themselves.
 
-<!-- This ended up being its own package -->
-- apollo-reporting-protobuf
+
+The `@apollo/server` naming is consistent with Apollo's other actively maintained npm packages (e.g., `@apollo/client` and `@apollo/gateway`). After Apollo Server 4 is released, all actively maintained Apollo packages will start with `@apollo/`; this leaves the `apollo-` namespace for other community integration packages like `apollo-server-fastify`.
 
 ### `apollo-server-plugin-operation-registry`
 The plugin `apollo-server-plugin-operation-registry` has been renamed to `@apollo/server-plugin-operation-registry`.
@@ -572,7 +568,6 @@ The new `addPlugin` function is useful if you'd like to pass the server itself t
 ### New HTTP request execution API
 <!-- TODO: Figure out the final form of this -->
 There’s a lot here :)
-Also we’ve changed the TypeScript names of the constructor options object from Config to ApolloServerOptions.
 
 ## Server lifecycle
 
@@ -677,8 +672,37 @@ Existing implementations of `KeyValueCache` should continue to work.
 - Mention that specifically redis users currently get a 300s default TTL, which will change when they move to Keyv. Our other cache implementations don't do this. This may or may not be worth mentioning since they should be reading the documentation for @keyv/redis when they make the switch and should configure it to their needs. But it wouldn't hurt to at least point it out.
 - Mention that default cache is now bounded, `cache: 'bounded'` can be deleted
 
+
+### Top-level errors consistent and observable
+This change makes things more consistent by returning all errors as JSON
+responses (using the `formatError` hook). In addition, for better
+observability, several new top-level plugin APIs are introduced that are
+called when various kinds of errors occur. Specifically:
+
+- New plugin hook `startupDidFail`. This is called once if startup fails
+  (e.g., if a 1serverWillStart1 plugin throws or if gateway fails to load
+  the schema). (If this hook throws, its error is logged.) Future calls to
+  1executeHTTPGraphQLRequest1 (if the server was started in the
+  background) now return a formatted JSON error instead of throwing.
+
+- New plugin hook `contextCreationDidFail`. (If this hook throws, its
+  error is logged.) As before, these errors are sent as formatted JSON
+  errors.
+
+- New plugin hook `invalidRequestWasReceived`. This is called for all
+  the errors that occur before being able to construct a GraphQLRequest
+  from an `HTTPGraphQLRequest`; this includes things like the top-level
+  fields being of the wrong type, missing body, CSRF failure, etc).
+  These errors are now sent as formatted JSON instead of as text/plain.
+
+- New plugin hook `unexpectedErrorProcessingRequest`. This is called if
+  `processGraphQLRequest` throws (typically because a plugin hook
+  threw). We are making the assumption that this means there is a
+  programming error, so we are making the behavior change that the
+  thrown error will be logged and "Internal server error" will be sent
+  in the HTTP response.
+
 # Upcoming Stuff to Cover:
-- Explicit support in core for serverless-style startup error handling
 - Move other plugins to their own repositories
 - Change usage reporting defaults backwards-incompatibly to send less data
 - Rethink ApolloError
