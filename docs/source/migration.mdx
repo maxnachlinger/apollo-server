@@ -8,6 +8,7 @@ title: Migrating to Apollo Server 4 (Alpha)
 
 > As the Apollo Server 4 rolls out we are in the process of bringing the rest of our documentation up to date. This migration guide covers all of the new changes between Apollo Server 3 and 4. Feel free to reference both the Apollo Server 3 docs in the meantime.
 
+<<<<<<< HEAD
 The focus of this major release is to improve Apollo Server's extensibility and make it simpler to use, maintain, and document. To learn more about the inspiration behind this release, see the [Apollo Server Roadmap](https://github.com/apollographql/apollo-server/blob/main/ROADMAP.md)
 
 Apollo Server 4's alpha provides two of following features, with more to come with the full release:
@@ -15,6 +16,12 @@ Apollo Server 4's alpha provides two of following features, with more to come wi
 - A simple well-defined API with a stable HTTP abstraction, enabling contributors to easily build integrations in other frameworks.
 - Consistent context typing for TS users, ensuring
 
+=======
+Apollo Server 4 provides the following features, with more to come with the full release:
+<!-- TODO: Add one more -->
+- A simple well-defined API with a stable HTTP abstraction, enabling contributors to easily build integrations in other frameworks.
+- A new `@apollo/server` package, combining numerous [smaller packages](#combining-packages-into-apolloserver).
+>>>>>>> 17e6d78ab (Add keyvadapter to dictionary)
 
 <!-- Do we want this? -->
 During Apollo Server 4's alpha, we are actively looking to gather feedback and [issues](https://github.com/apollographql/apollo-server/issues/new/choose) from community members and customers.
@@ -472,7 +479,7 @@ enum CacheControlScope {
 }
 ```
 
-### Combine many packages into a single @apollo/server
+### Combining packages into `@apollo/server`
 Apollo Server 4 was designed to make a developer's experience simpler at every turn. To this end, Apollo Server 4 takes many previously separate npm packages and combines them all into a single `@apollo/server` package.
 
 ### Express API is now a function `expressMiddleware` instead of getMiddleware/applyMiddleware methods on a subclass of ApolloServer
