@@ -37,16 +37,67 @@ If you're using an older version of `graphql`, upgrade it to a supported version
 
 ## Removed integrations
 
+Apollo Server 3 provided built-in framework integrations, attempting to make Apollo Server approachable for all developers regardless of their framework. Apollo Server 4 removes these built-in integrations, enabling developers to build and maintain their own integrations in the frameworks they know best.
+
+Apollo Server 4 also removes the built-in dependency on the `cors` and `body-parser` libraries (minus the `ApolloServerStandalone` class), enabling developers to easily set up the middleware they need alongside their Apollo Server setup.
+
+### Wrapping for framework-specific libraries
+
+Apollo Server 3 is distributed as a [collection of different packages](/apollo-server/integrations/middleware) for different environments and web frameworks.
+
+For [several reasons](https://github.com/apollographql/apollo-server/blob/main/ROADMAP.md#replace-9-core-maintained-bindings-with-a-stable-http-abstraction), these additional core-maintained integrations have caused friction in the development process and slowed down the Apollo Server team.
+
+Apollo Server 4 replaces this static set of hard-coded integrations
+with a stable API. Apollo Server 4's well-defined API enables collaborating developers to maintain and [build new integrations](/building-integrations) for the frameworks they know best.
+
+Apollo Server 4 removes the below integration packages:
+* "packages/apollo-server-fastify",
+* "packages/apollo-server-hapi",
+* "packages/apollo-server-koa",
+* "packages/apollo-server-lambda",
+* "packages/apollo-server-micro",
+* "packages/apollo-server-cloud-functions",
+* "packages/apollo-server-cloudflare",
+* "packages/apollo-server-azure-functions",
+
+> We are looking for volunteers to build and maintain these integrations! See the [issues with the 'integration-collaborators' label](https://github.com/apollographql/apollo-server/labels/integration-collaborators) to join the discussion about your favorite web framework today.
+
 
 ### Body-parser & CORS wrapping
-In Apollo Server 4, framework integration functions won't try to wrap these basic framework-specific libraries. If you want to use our Express middleware, you'll be required to use the standard body-parser middleware yourself.
+
+In Apollo Server 4, framework integration functions no longer wrap either the [`cors`](https://github.com/expressjs/cors) or [`body-parser`](https://www.npmjs.com/package/body-parser) libraries.
+
+If you'd like to use either the `cors` or `body-parser` libraries, you can manually add both to your framework-specific middleware.
+
+Below is an example of setting up `cors` and `body-parser` with Express middleware:
 
 ```ts
+import { gql, ApolloServer, expressMiddleware } from '@apollo/server';
+import express from 'express';
+import http from 'http';
+import cors from 'cors';
+import bodyParser from 'body-parser';
+
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+});
+
+await server.start();
+const app = express();
+const httpServer = http.createServer(app);
+
+// We set up our Express server's middleware:
+// 1. using the `cors` and `body-parser` libraries, and
+// 2. passing in an `ApolloServer` instance to the `expressMiddleware` function,
+// attaching Apollo Server to our Express server
+app.use(cors(), bodyParser.json(), expressMiddleware(server));
+await new Promise<void>((resolve) => httpServer.listen({ port: 4000 }, resolve));
+
+console.log(`🚀 Server ready at http://localhost:4000`);
 ```
 
-
-Apollo Server 4's new `ApolloServerStandalone`(the replacement for the batteries-included `apollo-server` package) will still include both the `body-parser` and `cors` packages, but those options are not configurable.
-
+Apollo Server 4's new [`ApolloServerStandalone`](#apolloserverstandalone-and-startstandaloneserver) class (e.g.,the replacement for the batteries-included `apollo-server` package) includes both the `body-parser` and `cors` packages under the hood, but neither package is configurable.
 
 ## Removed constructor options
 
