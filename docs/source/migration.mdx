@@ -509,7 +509,7 @@ And this does not:
 
 ### HTTP batching as opt-in feature
 
-Apollo Server supports [HTTP batching](link TODO), which allows multiple GraphQL operations to be executed as part of a single HTTP request (sharing a single context function invocation as well). Note that HTTP batching is not supported by all GraphQL clients and does not currently support incremental delivery. HTTP batching can save performance by sharing a context object across operations, but can also make reasoning about the amount of work any given request can do harder.
+Apollo Server supports [HTTP batching](link TODO), which allows multiple GraphQL operations to be executed as part of a single HTTP request (sharing a single context function invocation as well).
 
 In Apollo Server 3, support for HTTP batching was on by default and could be disabled by passing `allowBatchedHttpRequests: false` to `new ApolloServer()`. In Apollo Server 4, you must explicitly enable this feature by passing `allowBatchedHttpRequests: true` to `new ApolloServer()`.
 
@@ -674,6 +674,7 @@ Existing implementations of `KeyValueCache` should continue to work.
 - Mention that specifically redis users currently get a 300s default TTL, which will change when they move to Keyv. Our other cache implementations don't do this. This may or may not be worth mentioning since they should be reading the documentation for @keyv/redis when they make the switch and should configure it to their needs. But it wouldn't hurt to at least point it out.
 - Mention that default cache is now bounded, `cache: 'bounded'` can be deleted
 
+- Mention that specifically redis users currently get a 300s default TTL, which will change when they move to Keyv. Our other cache implementations don't do this. This may or may not be worth mentioning since they should be reading the documentation for @keyv/redis when they make the switch and should configure it to their needs. But it wouldn't hurt to at least point it out.
 
 ### Top-level errors consistent and observable
 This change makes things more consistent by returning all errors as JSON
