@@ -509,9 +509,9 @@ And this does not:
 
 ### HTTP batching as opt-in feature
 
-Apollo Server supports [HTTP batching](link TODO), which allows multiple GraphQL operations to be executed as part of a single HTTP request (sharing a single context function invocation as well).
+Apollo Server supports [batching HTTP requests](/apollo-server/requests/#batching), which allows multiple GraphQL operations to be executed as part of a single HTTP request (sharing a single context function invocation as well).
 
-In Apollo Server 3, support for HTTP batching was on by default and could be disabled by passing `allowBatchedHttpRequests: false` to `new ApolloServer()`. In Apollo Server 4, you must explicitly enable this feature by passing `allowBatchedHttpRequests: true` to `new ApolloServer()`.
+In Apollo Server 3, support for HTTP batching was on by default. In Apollo Server 4, you must explicitly enable this feature by passing `allowBatchedHttpRequests: true` to the `ApolloServer` constructor.
 
 <!-- TODO: investigate more! -->
 
