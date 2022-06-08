@@ -63,13 +63,13 @@ Apollo Server 4 removes the below integration packages:
 > We are looking for volunteers to build and maintain these integrations! See the [issues with the 'integration-collaborators' label](https://github.com/apollographql/apollo-server/labels/integration-collaborators) to join the discussion about your favorite web framework today.
 
 
-### Body-parser & CORS wrapping
+### `body-parser` & `cors` wrapping
 
-In Apollo Server 4, framework integration functions no longer wrap either the [`cors`](https://github.com/expressjs/cors) or [`body-parser`](https://www.npmjs.com/package/body-parser) libraries.
+Apollo Server 4 no longer wraps either the [`cors`](https://github.com/expressjs/cors) or [`body-parser`](https://www.npmjs.com/package/body-parser) libraries.
 
 If you'd like to use either the `cors` or `body-parser` libraries, you can manually add both to your framework-specific middleware.
 
-Below is an example of setting up `cors` and `body-parser` with Express middleware:
+Below is an example of setting up `cors` and `body-parser` with Express:
 
 ```ts
 import { gql, ApolloServer, expressMiddleware } from '@apollo/server';
@@ -99,31 +99,32 @@ console.log(`🚀 Server ready at http://localhost:4000`);
 
 Apollo Server 4's new [`ApolloServerStandalone`](#apolloserverstandalone-and-startstandaloneserver) class (e.g.,the replacement for the batteries-included `apollo-server` package) includes both the `body-parser` and `cors` packages under the hood, but neither package is configurable.
 
+### Connect
+
+[Connect](https://github.com/senchalabs/connect) is a predecessor of Express. Apollo Server 4 no longer supports Connect out of the box, though interested developers could write a connect-specific middleware using the Apollo Server 4 API. A PR to this migration guide is welcome if someone does this!
+
 ## Removed constructor options
 
-The follow `ApolloServer` constructor options have been removed in favor of other configuration methods.
+The following `ApolloServer` constructor options have been removed in favor of other features or configuration methods.
 
 ### `dataSources`
 
-Apollo Sever 4 removes the `dataSources` constructor option. The type returned from your context function matches the type available as context in your resolvers and plugins instead of the latter having an extra `dataSources` piece on it.
+In Apollo Server 3, the top-level [`dataSources` constructor option](/apollo-server/data/data-sources#adding-data-sources-to-apollo-server) was how  you provided `DataSource` subclasses to the [`context`](/apollo-server/data/resolvers/#the-context-argument) object.
 
-You can now add data sources to your context like so:
+In Apollo Server 4, we remove the `dataSources` constructor option to provide a more transparent way of adding `DataSource` subclasses to the `context` object for your server. This new way of adding `DataSource` subclasses also enables you to easily set up proper TypeScript typing for each data source.
 
-```ts
+```ts {35-44}
 // Simple data source example
 class DogsDataSource {
-  private cache: KeyValueCache<string>;
-  constructor({ cache }) {
-    this.cache = cache;
-  }
+  constructor() {}
 
   async getDogs() {
     return [{ name: 'Fido' }];
   }
 }
 
-// We create a TS interface to ensure our GraphQL context
-// is correctly typed and has everything we need it to
+// Create a TS interface to ensure our dataSources are
+// correctly typed
 interface MyContext {
   dataSources: {
     dogs: DogsDataSource;
@@ -147,14 +148,13 @@ const server = new ApolloServer<MyContext>({
 });
 
 const { url } = await startStandaloneServer(server, {
-  async context({ req, res }) {
-    // Return an object to use for our GraphQL context
+  async context() {
+    // This function is called for every incoming operation, and
+    // will return the context object
     return {
-      // Within this object we create a new instance of our data source class.
-      // Every GraphQL operation will have a new instance of the DogsDataSource
-      // class.
+      // Create a new instance of each data source for every operation
       dataSources: {
-        dogs: new DogsDataSource({ cache: server['internals'].cache })
+        dogs: new DogsDataSource(),
       },
     };
   },
@@ -164,10 +164,74 @@ const { url } = await startStandaloneServer(server, {
 console.log(`Server ready at ${url}`);
 ```
 
-### `modules`
-In Apollo Server 3 there are [several ways](https://github.com/apollographql/apollo-server/issues/6062) to provide your `ApolloServer` instance with a schema. One of these ways was by using a `modules` constructor option, which under the hood uses the `buildServiceDefinition` function from the `@apollographql/apollo-tooling` library, to specify a schema using an array of `typeDefs` and `resolvers` objects.
+In the above example, we create a `DogsDataSource` subclass and instantiate a new `DogsDataSource` within the object returned by the `context` function. With every incoming operation, the `context` function will return an object containing a new instance of `DogsDataSource` accessible to our resolvers from `context.dataSources.dogs`.
 
-To simplify the Apollo Server 4 API, we removed the `modules` constructor option and recommend that developers use the following syntax to create a schema when creating a new `ApolloServer` instance:
+Expand the example below if you'd like to see how to set up a data source using the `RESTDataSource` class:
+
+<ExpansionPanel title="Click to expand">
+
+```ts
+import { gql, ApolloServer, startStandaloneServer } from '@apollo/server';
+import { RESTDataSource } from 'apollo-datasource-rest';
+import { KeyValueCache } from '@apollo/utils.keyvaluecache';
+
+// RESTDataSource example
+class BooksAPI extends RESTDataSource {
+  constructor(cache) {
+    super();
+    this.baseURL = 'https://the-one-api.dev/v2/';
+    this.initialize(cache);
+  }
+
+  async getBooks() {
+    const { docs } = await this.get(`book/`);
+    return docs;
+  }
+}
+
+// Create a TS interface to ensure our dataSources are
+// correctly typed
+interface MyContext {
+  dataSources: {
+    booksAPI: BooksAPI;
+  }
+}
+
+const server = new ApolloServer<MyContext>({
+  typeDefs: `
+    type Query { getBooks: [Book] }
+    type Book { name: String _id: String }
+  `,
+  resolvers: {
+    Query: {
+      getBooks: async (_, __, context) => {
+        return await context.dataSources.booksAPI.getBooks();
+      },
+    },
+  },
+});
+
+const { url } = await startStandaloneServer(server, {
+  async context() {
+    return {
+      dataSources: {
+        booksAPI: new BooksAPI({ cache: server['internals'].cache }),
+      },
+    };
+  },
+  listen: { port: 4000 },
+});
+
+console.log(`Server ready at ${url}`);
+```
+
+</ExpansionPanel>
+
+### `modules`
+In Apollo Server 3, there are [several ways](https://github.com/apollographql/apollo-server/issues/6062) to provide your `ApolloServer` instance with a schema. One of these ways was using a `modules` constructor option, which  used the `buildServiceDefinition` function under the hood to specify a schema using an array of `typeDefs` and `resolvers` objects.
+
+To simplify the Apollo Server 4 API, we removed the `modules` constructor option and recommend that developers use something like the following to create a schema:
+
 ```js
   new ApolloServer({
     typeDefs: modules.map({ typeDefs } => typeDefs,
@@ -297,12 +361,33 @@ the [`__resolveReference`](/federation/api/apollo-subgraph/#__resolvereference) 
 <!-- link to /apollo-server/packages/server/src/express/index.ts -->
 Moreover, there is no subclassing of ApolloServer at all.
 
-`expressMiddleware` has no runtime dependency on `express` (or any other package) although `standaloneServer` does.
+<!--  Add multi-code blocks -->
+```ts
+import express from 'express';
+import http from 'http';
+import cors from 'cors';
+import { json } from 'body-parser';
+import { ApolloServer } from '@apollo/server';
+// TODO: Double check this import
+import { expressMiddleware } from '@apollo/server/express';
+import { typeDefs, resolvers } from ('./schema');
 
-### Express middleware no longer tries to also work with Express’ predecessor project “Connect”
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+});
 
-If anybody needs [Connect middleware](https://github.com/senchalabs/connect) they can add it themselves.
+await server.start();
+// Pass the ApolloServer instance to the expressMiddleware function
+app.use(cors(), json(), expressMiddleware(server));
+await new Promise<void>((resolve) => httpServer.listen({ port: 4000 }, resolve));
 
+console.log(`🚀 Server ready at http://localhost:4000`);
+```
+
+
+<!-- TODO: double check link-->
+Currently the [`expressMiddleware`](https://github.com/apollographql/apollo-server/blob/main/packages/server/src/express/index.ts) function has no runtime dependency on `express` (or any other package) though `standaloneServer` does.
 
 
 ### The `apollo-server` npm package is now the `startStandaloneServer` function

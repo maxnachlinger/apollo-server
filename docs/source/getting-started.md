@@ -12,6 +12,7 @@ This tutorial assumes that you are familiar with the command line and
 TypeScript or JavaScript, and that you have a recent version of Node.js (14+) installed.
 
 If you do not already have TypeScript installed on your computer, install it now:
+
 ```bash
 npm install -g typescript
 ```
