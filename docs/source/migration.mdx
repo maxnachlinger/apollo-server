@@ -614,7 +614,7 @@ object directly instead of arguments to your context function.
 ### Context function passed to your middleware-specific integration function
 
 `ApolloServerBase` is now just `ApolloServer`. The Context function is now a
-named argument passed into your middleware; it's required if your context type is not the default `BaseContext`. ontext function is passed to your middleware-specific integration function (eg `expressMiddleware` or `startStandaloneServer`) instead of ApolloServer constructor
+named argument passed into your middleware; it's required if your context type is not the default `BaseContext`.context function is passed to your middleware-specific integration function (eg `expressMiddleware` or `startStandaloneServer`) instead of ApolloServer constructor
 
 #### `server.executeOperation` now takes a context *value* rather than arguments to pass to your context function.
 
