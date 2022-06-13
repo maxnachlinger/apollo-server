@@ -4,7 +4,7 @@ title: Migrating to Apollo Server 4 (Alpha)
 
 > ⚠️ **Apollo Server 4 is out in public alpha.** It is not yet feature-complete, and breaking changes might occur between this release and general availability. [Learn about release stages.](https://www.apollographql.com/docs/resources/release-stages/#open-source-release-stages)
 >
->  Apollo Server 4 introduces many across-the-board changes, and we are working on updating our documentation to reflect these changes. This article details all of the differences between Apollo Server 3 and Apollo Server 4.
+>  Apollo Server 4 introduces many across-the-board changes, and we are working on updating our documentation to reflect these changes. This article explains which features _do_ require code changes and how to make them.
 
 The focus of this major release is to improve Apollo Server's extensibility and make it simpler to use, maintain, and document. To learn more about the inspiration behind this alpha release, see the [Apollo Server Roadmap](https://github.com/apollographql/apollo-server/blob/main/ROADMAP.md).
 
@@ -494,7 +494,7 @@ const apolloServerInstance = new ApolloServer<MyContext>({
 
 // startStandaloneServer returns the url where your ApolloServer
 // instance is listening
-const { url } = await startStandaloneServer(apolloServerInstance, listenOpts, serverOpts)
+const { url } = await startStandaloneServer(apolloServerInstance, serverOpts, listenOpts)
 ```
 
 The `startStandaloneServer` function accepts three arguments:
@@ -552,7 +552,7 @@ const { url } = await startStandaloneServer(apolloServerInstance, {
     token: await getTokenForRequest(req),
   }),
   listen: { port: 4000 }
-}).listen({ port: 4000 });
+})
 ```
 
 
