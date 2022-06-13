@@ -6,16 +6,31 @@ title: Migrating to Apollo Server 4 (Alpha)
 >
 >  Apollo Server 4 introduces many across-the-board changes, and we are working on updating our documentation to reflect these changes. This article details all of the differences between Apollo Server 3 and Apollo Server 4.
 
-The focus of this major release is to improve Apollo Server's extensibility and make it simpler to use, maintain, and document. To learn more about the inspiration behind this alpha release, please see the [Apollo Server Roadmap](https://github.com/apollographql/apollo-server/blob/main/ROADMAP.md).
+The focus of this major release is to improve Apollo Server's extensibility and make it simpler to use, maintain, and document. To learn more about the inspiration behind this alpha release, see the [Apollo Server Roadmap](https://github.com/apollographql/apollo-server/blob/main/ROADMAP.md).
 
 Apollo Server 4 provides the following features, with more to come with the full release:
-<!-- TODO: Add one more -->
-- A simple well-defined API with a stable HTTP abstraction, enabling contributors to easily build integrations in other frameworks.
+<!-- TODO: Fix first point -->
+- Add a note about how the new functions are easy to setup and use without having to switch packages.
+- A simple well-defined API with a stable HTTP abstraction, enabling contributors to easily build and maintain integrations in their preferred framework.
 - A new `@apollo/server` package, combining numerous [smaller packages](#combining-packages-into-apolloserver).
+
+<!--  TODO: make this section better (including mermaid) -->
+For those migrating from Apollo Server 3 to Apollo Server 4, use the below flowchart to see which function now sets up your server:
+
+```mermaid
+graph TB;
+  server("Am I using the apollo-server package?");
+  server--No-->express("Am I using the apollo-server-express package?");
+  server--Yes-->useStandAlone("Use the startStandaloneServer function");
+  express--No-->buildIntegration("You can’t upgrade during the alpha <b>yet</b>. <br/> Help us maintain an integration for your framework!");
+  express--Yes-->useExpressMiddleware("Use the expressMiddleware function");
+  class useStandAlone,useExpressMiddleware secondary;
+```
 
 During Apollo Server 4's alpha, we are actively looking to gather feedback and [issues](https://github.com/apollographql/apollo-server/issues/new/choose) from community members and customers.
 
 > For a list of all breaking changes, see the [changelog](https://github.com/apollographql/apollo-server/blob/main/CHANGELOG.md).
+
 
 ## Bumped dependencies
 
@@ -166,7 +181,6 @@ const { url } = await startStandaloneServer(server, {
 
 console.log(`Server ready at ${url}`);
 ```
-
 
 ```js {27-36}
 // Simple data source example
@@ -328,16 +342,12 @@ In Apollo Server 4 we removed the `formatResponse` hook. The `willSendResponse` 
 
 Apollo Server 4 drops support for [`@apollo/gateway` versions](/federation/api/apollo-gateway/) below v0.35.0.
 
-### Fields from `GraphQLRequestContext` and `GraphQLServiceContext`
+### Fields from `GraphQLRequestContext` and `GraphQLServerContext`
 In Apollo Server 4, the `debug` and `schemaHash` fields are no longer available on `GraphQLRequestContext`.
 
 The `schemaHash` field was an unstable hash of the introspection JSON of a schema, created for the `apollo-server-plugin-operation-registry` package. Note that the `schemaHash` field is different from the hash of the schema SDL, which schema reporting uses.
 
-We additionally removed the `persistedQueries` field from `GraphQLServiceContext`.
-
-`GraphQLResponse` object (eg `requestContext.response`) has been refactored: the `data`, `errors`, and `extensions` fields are on a `result` sub-object. (This will change further for incremental delivery.) `data` and `extensions` are now `Record<string, unknown>` rather than `Record<string, any>` so more casts may be needed. `GraphQLRequestContext.response` and `GraphQLResponse.http` are now always set.
-
-`requestDidStart` hooks are now called in parallel, rather than in series.
+We additionally removed the `persistedQueries` field from `GraphQLServerContext`.
 
 ### Dropping Gateway TypeScript types
 
@@ -351,9 +361,7 @@ This `GatewayInterface` type requires the following:
 - The `executor` method must async
 - The `apollo` option must be passed to the `load` method.
 
-The `GraphQLExecutionResult` type (returned by `executor`) has been replaced by the similar `ExecutionResult` type from `graphql-js`. (The types are the same except that `data` and `extensions` are now `Record<string, unknown>` rather than `Record<string, any>`.)
-
-> All recent versions of `@apollo/gateway` satisfy these stronger requirements.
+The `ExecutionResult` type from `graphql-js` replaces the similar `GraphQLExecutionResult` type (returned by `executor`). The types are essentially the same, except that `data` and `extensions` are now `Record<string, unknown>` rather than `Record<string, any>`.
 
 ## Changes to framework integrations
 
@@ -395,7 +403,7 @@ console.log(`🚀 Server ready at http://localhost:4000`);
 
 Additionally, the `expressMiddleware` function has no runtime dependency on `express` (or any other package).
 
-### The `apollo-server` npm package is now the `startStandaloneServer` function
+## Changed constructor options
 
 ### `config` TypeScript name
 In Apollo Server 4, the TypeScript name of the constructor options object has changed from `Config` to the more aptly named, `ApolloServerOptions`.
@@ -405,7 +413,6 @@ In Apollo Server 4, the TypeScript name of the constructor options object has ch
 The `debug` constructor option has been renamed `includeStackTracesInErrorResponses`:
 
 ```ts
-
 const apolloServerInstance = new ApolloServer<MyContext>({
   typeDefs,
   resolvers,
@@ -413,6 +420,7 @@ const apolloServerInstance = new ApolloServer<MyContext>({
 });
 ```
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 const { url } = await startStandaloneServer(apolloServerInstance, {
@@ -432,10 +440,13 @@ As part of this change, if you don't provide your own logger, the default log le
 =======
 =======
 >>>>>>> 3128a127b (Rebase and get up to date)
+=======
+>>>>>>> 4ddf78827 (Start context section)
 As part of this change, if you don't provide your own logger, the default log level has been switched to `DEBUG` (e.g., instead of `INFO`).
 
 ## Changed Features
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 ###  `ApolloServerStandalone` and `startStandaloneServer`
@@ -453,6 +464,9 @@ Apollo Server 3 included a "batteries-included" `apollo-server` package, designe
 >>>>>>> adfe5453c (update from the version-4 branch)
 =======
 =======
+=======
+### `startStandaloneServer` function
+>>>>>>> 4ddf78827 (Start context section)
 Apollo Server 3 has a "batteries-included" `apollo-server` package designed to help developers get started quickly. The "batteries-included" version of `ApolloServer`  is less configurable, but includes useful defaults to reduce setup time.
 >>>>>>> eca61a86d (Continue documenting startStandaloneServer)
 >>>>>>> f5dd9d4c6 (Continue documenting startStandaloneServer)
@@ -460,9 +474,11 @@ Apollo Server 3 has a "batteries-included" `apollo-server` package designed to h
 Apollo Server 3 has a "batteries-included" `apollo-server` package designed to help developers get started quickly. The "batteries-included" version of `ApolloServer`  is less configurable, but includes useful defaults to reduce setup time.
 >>>>>>> 3128a127b (Rebase and get up to date)
 
-In Apollo Server 4, we introduce the `startStandaloneServer` function in the main `@apollo/server` package. The `startStandaloneServer` function has a similar concept to the "batteries-included" `ApolloServer`,
+In Apollo Server 4, we introduce the `startStandaloneServer` function in the main `@apollo/server` package. The concept of the `startStandaloneServer` function is similar to the "batteries-included" `ApolloServer`, giving developers a more streamlined setup experience without offering as much configuration.
 
-Below is the syntax for setting up the `startStandaloneServer` function:
+> If you were previously using Apollo Server 3's `apollo-server` package, you'll want to use the `startStandaloneServer` function in Apollo Server 4.
+
+Below is the basic syntax for setting up the `startStandaloneServer` function:
 
 ```js
 // A TS interface for your context object, passed to ApolloServer upon instantiation
@@ -482,9 +498,13 @@ const { url } = await startStandaloneServer(apolloServerInstance, listenOpts, se
 ```
 
 The `startStandaloneServer` function accepts three arguments:
-  1. An instance of `ApolloServer` to start and listen to.
-  2. `listenOpts` accepts the same arguments as [http.Server's listen() method](https://nodejs.org/dist/latest-v12.x/docs/api/http.html#http_server_listen) method.
-  3. `serverOpts`
+
+
+| Argument  | Description  |
+|---|---|
+| `apolloServerInstance` | <p>The instance of `ApolloServer` to spin up and listen to.</p>  |
+| `serverOpts` | <p>The options for your ApolloServer instance. This is commonly where you will define a `context` function that returns an object to use as your GraphQL `context` object.</p> |
+| `listenOpts` |  <p>The listening options for the under the hood HTTP server. You will most commonly add the port for your server to listen to here.<p></p> <p></p>This argument accepts the same arguments as [http.Server's listen() method](https://nodejs.org/dist/latest-v12.x/docs/api/http.html#http_server_listen) method.</p> |
 
 Below is a snippet of the full set up for using the `startStandaloneServer` function:
 
@@ -503,27 +523,53 @@ const apolloServerInstance = new ApolloServer<MyContext>({
 
 //
 const { url } = await startStandaloneServer(apolloServerInstance, {
+  // The objects passed to your context function
+  // are http.IncomingMessage and http.ServerResponse objects
+  // (not their Express subclasses)
   context: async ({req, _res}) => ({
     token: await getTokenForRequest(req),
   }),
   listen: { port: 4000 }
-}).listen({ port: 4000 });
+});
 
 console.log(`🚀 Server listening at: ${url}`);
 
 ```
 
+// TODO Add section on setting up context
+The `context` function for `startStandaloneServer` is passed an
+argument whose TS type only promises that req and res are core `http`
+objects rather than Express objects. (While we do currently implement
+`startStandaloneServer` using Express, this change means we do not
+have to commit to continuing that choice.)
+
+```ts
+const { url } = await startStandaloneServer(apolloServerInstance, {
+  // The objects passed to your context function
+  // are http.IncomingMessage and http.ServerResponse objects
+  // (not their Express subclasses)
+  context: async ({req, _res}) => ({
+    token: await getTokenForRequest(req),
+  }),
+  listen: { port: 4000 }
+}).listen({ port: 4000 });
+```
+
+
 The `startStandaloneServer` function from `@apollo/server` does have a runtime dependency on `express`.
-The `startStandaloneServer` function from `@apollo/server` does have a runtime dependency on `express`.
+
 
 ### Renamed context
 
-In AS3 we use `context` for both "a function producing a context value"
-and "the context value itself".
+In Apollo Server 3, [`context`](/apollo-server/data/resolvers/#the-context-argument) can refer to either:
+  * a _function_ that returns a context object, or
+  * the _values_ within your GraphQL context
 
-In Apollo Server 4, `context` is the name of the "a function producing a context value":
+In Apollo Server 4, we clarify this distinction by using `context` as the name of the _function_ producing a context object:
 
-```ts
+<MultiCodeBlock>
+
+```ts {13}
 interface MyContext {
   token: string;
 }
@@ -534,53 +580,76 @@ const apolloServerInstance = new ApolloServer<MyContext>({
 });
 
 const { url } = await startStandaloneServer(apolloServerInstance, {
-  context: async (req, _res) => ({
-    token: await getTokenForRequest(req),
-  }),
-})
-
+  // This function is called for every incoming operation, and
+  // will return an object that is available from your resolvers
+  async context() {
+    return {
+      token: await getTokenForRequest(req),
+    };
+  },
+  listen: { port: 4000 },
+});
 ```
 
-Note, if you are accessing your context's _value_ in a plugin (e.g., on `GraphQLRequestContext`, or as a named argument to
-`willResolveField`) you should now use `contextValue`.
+```js {9}
+const apolloServerInstance = new ApolloServer({
+  typeDefs,
+  resolvers,
+});
+
+const { url } = await startStandaloneServer(apolloServerInstance, {
+  // This function is called for every incoming operation, and
+  // will return an object that is available from your resolvers
+  async context() {
+    return {
+      token: await getTokenForRequest(req),
+    };
+  },
+  listen: { port: 4000 },
+});
+```
+
+</MultiCodeBlock>
+
+If you are accessing your context's _value_ in a plugin (e.g., on [`GraphQLRequestContext`](https://github.com/apollographql/apollo-server/blob/main/packages/server/src/externalTypes/graphql.ts#L47), or as a named argument to
+`willResolveField`), you should now use `contextValue`.
 
 ### `@apollo/utils.fetcher` for TypeScript typing
 
-In Apollo Server 3 the `apollo-server-env` package primarily provided TypeScript typings and polyfills for the `fetch` and `URL` APIs. With Apollo Server 4, we created a new `@apollo/utils.fetcher` which defines a more minimal
-fetch API as `Fetcher` to provide TypeScript typings.
+In Apollo Server 3, the `apollo-server-env` package primarily provided TypeScript typings and polyfills for the `fetch` and `URL` APIs.
 
-You can now use `@apollo/utils.fetcher` instead of `apollo-server-env` to provide Fetch API TypeScript typing.
+Apollo Server 4 introduces `@apollo/utils.fetcher`, which defines a minimal fetch API, `Fetcher`, to provide TypeScript typings. You can now use `@apollo/utils.fetcher` to provide Fetch API TypeScript typing.
 
-We are removing the `requestAgent` option from `ApolloServerPluginUsageReporting`, because this option predated the fetcher option.
+With this change we are also removing the `requestAgent` option from usage reporting plugin because this option predated the `fetcher` option.
 
-So, instead of:
+Where previously you would write:
 ```ts
   ApolloServerPluginUsageReporting({ requestAgent })
 ```
 
 You can now write:
-
 ```ts
-    import fetch from 'node-fetch';
-    ApolloServerPluginUsageReporting({
-      fetcher: (url, options) => fetch(url, {
-        ...options,
-        agent: requestAgent,
-      }),
-    });
+  import fetch from 'node-fetch';
+  ApolloServerPluginUsageReporting({
+    fetcher: (url, options) => fetch(url, {
+      ...options,
+      agent: requestAgent,
+    }),
+  });
 ```
 
 ### Local landing page defaults to embedded
-The default landing page for local development now is an embedded Apollo Sandbox which allows you to run operations with no CORS setup required. To return to the AS3 default of a splash page linking to Apollo Sandbox, pass `ApolloServerPluginLandingPageLocalDefault({embed: false})`.
+
+Apollo Server 4's default development landing page is now an embedded Apollo Sandbox, which enables you to easily run GraphQL operations with no additional CORS set up required. If you'd like to instead use  Apollo Server's default landing page, pass `ApolloServerPluginLandingPageLocalDefault({embed: false})` to the plugins for your Apollo Server constructor.
 
 ### CSRF prevention on by default
 CSRF prevention was added to Apollo Server 3.7+, and is now on by default in Apollo Server 4. For more information about CSRF prevention and CORS, see [Configuring CORS](/apollo-server/security/cors).
 
 ### ApolloServer’s generic argument is your context object type
 
-Currently `ApolloServer` is genericized on the _arguments_ to the context function, rather the _actual_ context object itself. This means we don't get type inference into resolvers, inline plugins, etc.
+In Apollo Server 3, the TypeScript typing for `context` relied on the _arguments_ to the context function, rather the _actual_ context object itself. Which meant that you don't get proper type inference into resolvers, inline plugins, and other helpful properties.
 
-Instead of passing context to the `ApolloServer` constructor at all, we choose to make it an _argument_ to the integration function. That way the arguments aren't genericized; they are specific to the function you're calling. Make the complete context object a parameter to the "execute this request' function.
+In Apollo Server 4 we choose to make a _argument_ to the integration function. That way the arguments aren't genericized; they are specific to the function you're calling. Make the complete context object a parameter to the "execute this request' function.
 
 We found a lot of places that `TContext` wasn't threaded through types and
 added it.
@@ -807,6 +876,12 @@ called when various kinds of errors occur. Specifically:
   programming error, so we are making the behavior change that the
   thrown error will be logged and "Internal server error" will be sent
   in the HTTP response.
+
+### Changed update these
+
+`GraphQLResponse` object (eg `requestContext.response`) has been refactored: the `data`, `errors`, and `extensions` fields are on a `result` sub-object. (This will change further for incremental delivery.) `data` and `extensions` are now `Record<string, unknown>` rather than `Record<string, any>` so more casts may be needed. `GraphQLRequestContext.response` and `GraphQLResponse.http` are now always set.
+
+`requestDidStart` hooks are now called in parallel, rather than in series.
 
 
 # Upcoming Stuff to Cover:
