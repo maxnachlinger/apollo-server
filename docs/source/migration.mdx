@@ -351,7 +351,7 @@ The `schemaHash` field was an unstable hash of the introspection JSON of a schem
 
 We additionally removed the `persistedQueries` field from `GraphQLServerContext`.
 
-### Dropping Gateway TypeScript types
+### Dropping Gateway types
 
 In Apollo Server 2, the TypeScript type used for the `gateway` constructor option is called `GraphQLService`. In Apollo Server 3, the TypeScript type is called `GatewayInterface`.
 
@@ -484,8 +484,12 @@ Apollo Server 3 has a "batteries-included" `apollo-server` package designed to h
 =======
 The below features have changed in Apollo Server 4.
 
+<<<<<<< HEAD
 ### `startStandaloneServer` function
 >>>>>>> 6f32dc062 (Add more tables)
+=======
+### `startStandaloneServer`
+>>>>>>> d03825c01 (Start execute operation)
 
 > If you are using Apollo Server 3's `apollo-server` package, you'll want to use the `startStandaloneServer` function from the `@apollo/server` package for Apollo Server 4.
 
@@ -563,24 +567,6 @@ const { url } = await startStandaloneServer(apolloServerInstance, {
 console.log(`🚀 Server listening at: ${url}`);
 ```
 
-To provide an initial [`context`](apollo-server/data/resolvers/#the-context-argument) to your resolvers using `startStandaloneServer`, add a `context` initialization function to your server's options. This function is called with every request, so you can customize the context based on each request's details (such as HTTP headers).
-
-```ts
-const { url } = await startStandaloneServer(apolloServerInstance, {
-  // The objects passed to your context function
-  // are http.IncomingMessage and http.ServerResponse objects
-  // (not their Express subclasses)
-  context: async ({req, _res}) => ({
-    token: await getTokenForRequest(req),
-    // Create a new instance of each data source for every operation
-    dataSources: {
-      dogs: new DogsDataSource(),
-    },
-  }),
-  listen: { port: 4000 }
-})
-```
-
 ### Default CSRF prevention
 CSRF prevention was added to Apollo Server 3.7+ and is now on by default in Apollo Server 4. For more information about CSRF prevention and CORS, see [Configuring CORS](/apollo-server/security/cors).
 
@@ -598,22 +584,204 @@ The following packages have all been incorporated into the `@apollo/server` pack
 
 Another side effect of this change is that all actively maintained Apollo packages start with `@apollo/`. This leaves the `apollo-` namespace open for community integration packages (e.g., `apollo-server-fastify`).
 
-### `variables` and `extensions` fields
+### Moved `context` initialization function
 
-Apollo Server 3 and 4 both accept `POST` requests with a JSON body. Apollo Server 3 supports an edge case where the `variables` and
-`extensions` fields inside a `POST` request's JSON-encoded body could potentially be JSON-encoded strings.
+In Apollo Server 3, you could provide an initial [`context`](/apollo-server/data/resolvers#the-context-argument) to your resolvers by adding a `context` initialization function to the `ApolloServer` constructor:
 
-Apollo Server 4 clear this up by requiring that within a `POST` request's JSON-encoded body, the `variables` and `extensions` fields must be objects. Additionally, neither the `variables` nor `extensions` fields should be doubly-encoded.
+```js
+// Apollo Server 3 Constructor
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+  csrfPrevention: true,
+  context: ({ req }) => ({
+    authScope: getScope(req.headers.authorization)
+  })
+}));
+```
 
-For example, below is a valid query in Apollo Server 4:
-```
-{“query”: “{ __typename }”, extensions: {“foo”: 1}}
+In Apollo Server 4, the `context` function is a named argument passed into your middleware function, which is required if your `ApolloServer` instance is not using the default `BaseContext` type.
+
+Below is an example of providing a `context` initialization function using the `startStandaloneServer` function:
+
+<MultiCodeBlock>
+
+```ts {13-15}
+interface MyContext {
+  token: String;
+}
+
+const server = new ApolloServer<MyContext>({
+  typeDefs,
+  resolvers,
+});
+
+const { url } = await startStandaloneServer(apolloServerInstance, {
+  // A named context function is required if you are not
+  // using ApolloServer<BaseContext>
+  context: async ({req, res}) => ({
+    token: await getTokenForRequest(req),
+  }),
+  listen: { port: 4000 }
+})
 ```
 
-While this query would be invalid:
+```js {7-9}
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+});
+
+const { url } = await startStandaloneServer(apolloServerInstance, {
+  context: async ({ req, res }) => ({
+    token: await getTokenForRequest(req),
+  }),
+
+  listen: { port: 4000 },
+});
 ```
-{“query”: “{ __typename }”, extensions: “{\“foo\”: 1}”}
+
+</MultiCodeBlock>
+
+The syntax is similar for the `expressMiddleware` function:
+
+<MultiCodeBlock>
+
+```ts {18-20}
+interface MyContext {
+  token: String;
+}
+
+const server = new ApolloServer<MyContext>({
+  typeDefs,
+  resolvers,
+});
+
+await server.start();
+const app = express();
+const httpServer = http.createServer(app);
+
+app.use(
+  // A named context function is required if you are not
+  // using ApolloServer<BaseContext>
+  expressMiddleware(server, {
+    context: async ({ req, res }) => ({
+      token: await getTokenForRequest(req),
+    }),
+  }),
+);
 ```
+
+```js {12-14}
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+});
+
+await server.start();
+const app = express();
+const httpServer = http.createServer(app);
+
+app.use(
+  expressMiddleware(server, {
+    context: async ({ req, res }) => ({
+      token: await getTokenForRequest(req),
+    }),
+  }),
+);
+```
+
+</MultiCodeBlock>
+
+Note, the objects passed to the `context` initialization function are `http.IncomingMessage` and `http.ServerResponse` objects, not necessarily their Express subclasses.
+
+### Improved typing for `context`
+
+In Apollo Server 3, the TypeScript typing for `context` relies on the _arguments_ to the context function instead of the _contents_ of the actual context object. This means you don't get proper type inference for `context` in your resolvers, inline plugins, etc.
+
+In Apollo Server 4, we choose to make `context` an argument to `ApolloServer`'s integration function. This gives you proper `context` TypeScript typing throughout, providing you with `context` type inference and enabling you to ensure your `context` object is complete before executing requests.
+
+You can set up `context` typing with  `ApolloServer`, like so:
+
+```ts
+interface MyContext {
+  token: string;
+}
+
+const apolloServerInstance = new ApolloServer<MyContext>({
+  typeDefs,
+  resolvers,
+});
+
+const { url } = await startStandaloneServer(apolloServerInstance, {
+  context: async ({req, res}) => ({
+    // You now get proper type inference within your context function!
+    token: await getTokenForRequest(req),
+  }),
+  listen: { port: 4000 }
+});
+```
+
+Below is an example setting up `context` typing within `plugins`:
+
+```ts
+new ApolloServer<{ foo: number }>({
+    Query: {
+      n(_parent: any, _args: any, context): number {
+        return context.foo;
+      },
+    },
+  },
+  plugins: [
+    {
+      async requestDidStart({ context }) {
+        let n: number = context.foo;
+      },
+    },
+    // Plugins declared to be <BaseContext> still work.
+    ApolloServerPluginCacheControlDisabled(),
+  ],
+});
+```
+
+### Renamed `context`
+
+In Apollo Server 3, we use `context` to refer to both a _function_ that returns a context object and the _values_ within your GraphQL context.
+
+In Apollo Server 4, we clarify this distinction by continuing to use `context` as the name of the _function_:
+
+<MultiCodeBlock>
+
+```ts {13}
+const { url } = await startStandaloneServer(apolloServerInstance, {
+  // This function is called for every incoming operation, and
+  // will return an object that is available from your resolvers
+  async context() {
+    return {
+      token: await getTokenForRequest(req),
+    };
+  },
+  listen: { port: 4000 },
+});
+```
+
+</MultiCodeBlock>
+
+Fields containing a specific context _value_ (such as on `GraphQLRequestContext`, the first argument to all plugin functions) are now named `contextValue`.
+
+### `executeOperation` accepts `context` value
+
+`server.executeOperation` now takes a context *value* rather than arguments to pass to your context function.
+
+Note that we now differentiate in names between
+"contextFunction" (a function returning a context object) and "context"
+(the context object itself, eg as an argument to executeOperation).
+
+This also simplifies executeOperation, where you just pass a context
+object directly instead of arguments to your (probably already
+fake-for-testing) context function.
+
+We found that in practice, that’s what people actually wanted in tests. If you want to test the behavior of your context function, you can unit-test it directly.
 
 ### HTTP batching as opt-in feature
 
@@ -656,38 +824,13 @@ console.log(`🚀 Server ready at http://localhost:4000`);
 
 The new `addPlugin` function is useful if you'd like to pass the server itself to a plugin’s constructor.
 
-### Renamed `context`
-
-In Apollo Server 3, we use `context` to refer to both a _function_ that returns a context object and the _values_ within your GraphQL context.
-
-In Apollo Server 4, we clarify this distinction by continuing to use `context` as the name of the _function_:
-
-<MultiCodeBlock>
-
-```ts {13}
-const { url } = await startStandaloneServer(apolloServerInstance, {
-  // This function is called for every incoming operation, and
-  // will return an object that is available from your resolvers
-  async context() {
-    return {
-      token: await getTokenForRequest(req),
-    };
-  },
-  listen: { port: 4000 },
-});
-```
-
-</MultiCodeBlock>
-
-Fields containing a specific context _value_ (such as on `GraphQLRequestContext`, the first argument to all plugin functions) are now named `contextValue`.
-
 ### `@apollo/utils.fetcher` for TypeScript typing
 
 In Apollo Server 3, the `apollo-server-env` package primarily provided TypeScript typings and polyfills for the `fetch` and `URL` APIs.
 
-Apollo Server 4 introduces `@apollo/utils.fetcher`, which defines a minimal fetch API, `Fetcher`, to provide TypeScript typings. You can now use `@apollo/utils.fetcher` to provide Fetch API TypeScript typing.
+Apollo Server 4 introduces `@apollo/utils.fetcher`, which defines a minimal fetch API (`Fetcher`) that provides TypeScript typings. You can use `@apollo/utils.fetcher` to provide your Fetch API typing.
 
-With this change we are also removing the `requestAgent` option from usage reporting plugin because this option predated the `fetcher` option.
+With this change, we are removing the `requestAgent` option from the [usage reporting plugin](/apollo-server/api/plugin/usage-reporting/) because  `requestAgent` predates the `fetcher` option.
 
 Where previously you would write:
 ```ts
@@ -697,6 +840,7 @@ Where previously you would write:
 You can now write:
 ```ts
   import fetch from 'node-fetch';
+
   ApolloServerPluginUsageReporting({
     fetcher: (url, options) => fetch(url, {
       ...options,
@@ -705,60 +849,27 @@ You can now write:
   });
 ```
 
-### Local landing page defaults to embedded
+### `variables` and `extensions` fields
 
-Apollo Server 4's default development landing page is now an embedded Apollo Sandbox, which enables you to easily run GraphQL operations with no additional CORS set up required. If you'd like to instead use  Apollo Server's default landing page, pass `ApolloServerPluginLandingPageLocalDefault({embed: false})` to the plugins for your Apollo Server constructor.
+Apollo Server 3 and 4 both accept `POST` requests with a JSON body. Apollo Server 3 supports an edge case where the `variables` and
+`extensions` fields inside a `POST` request's JSON-encoded body could potentially be JSON-encoded strings.
 
-### Improved TypeScript typing for context creation
+Apollo Server 4 clear this up by requiring that within a `POST` request's JSON-encoded body, the `variables` and `extensions` fields must be objects (not doubly-encoded).
 
-In Apollo Server 3, the TypeScript typing for `context` relied on the _arguments_ to the context function, rather the _actual_ context object itself. Which meant that you don't get proper type inference into resolvers, inline plugins, and other helpful properties.
-
-In Apollo Server 4 we choose to make a _argument_ to the integration function. That way the arguments aren't genericized; they are specific to the function you're calling. Make the complete context object a parameter to the "execute this request' function.
-
-We found a lot of places that `TContext` wasn't threaded through types and
-added it.
-
-Now you can do stuff like:
-
-```ts
-new ApolloServer<{ foo: number }>({
-    Query: {
-      n(_parent: any, _args: any, context): number {
-        return context.foo;
-      },
-    },
-  },
-  plugins: [
-    {
-      async requestDidStart({ context }) {
-        let n: number = context.foo;
-      },
-    },
-    // Plugins declared to be <BaseContext> still work.
-    ApolloServerPluginCacheControlDisabled(),
-  ],
-});
+For example, below is a valid query:
+```
+{“query”: “{ __typename }”, extensions: {“foo”: 1}}
 ```
 
-This also simplifies `executeOperation`, where you just pass a context
-object directly instead of arguments to your context function.
+Whereas this query would be invalid:
+```
+{“query”: “{ __typename }”, extensions: “{\“foo\”: 1}”}
+```
 
-### Context function passed to your middleware-specific integration function
+### Local landing page defaults to embedded
 
-`ApolloServerBase` is now just `ApolloServer`. The Context function is now a
-named argument passed into your middleware; it's required if your context type is not the default `BaseContext`.context function is passed to your middleware-specific integration function (eg `expressMiddleware` or `startStandaloneServer`) instead of ApolloServer constructor
+Apollo Server 4's default development landing page is now an embedded Apollo Sandbox, enabling you to run GraphQL operations with no additional CORS set up. If you want to use Apollo Server's default landing page instead, pass `ApolloServerPluginLandingPageLocalDefault({embed: false})` to the plugins for your `ApolloServer` constructor.
 
-#### `server.executeOperation` now takes a context *value* rather than arguments to pass to your context function.
-
-Note that we now differentiate in names between
-"contextFunction" (a function returning a context object) and "context"
-(the context object itself, eg as an argument to executeOperation).
-
-This also simplifies executeOperation, where you just pass a context
-object directly instead of arguments to your (probably already
-fake-for-testing) context function.
-
-We found that in practice, that’s what people actually wanted in tests. If you want to test the behavior of your context function, you can unit-test it directly.
 
 ### Change CacheScope enum to a pure type
 
@@ -777,6 +888,7 @@ enum CacheControlScope {
 }
 ```
 
+<<<<<<< HEAD
 
 <<<<<<< HEAD
 ### HTTP handling changes
@@ -861,6 +973,8 @@ The new `addPlugin` function is useful if you'd like to pass the server itself t
 =======
 >>>>>>> 8e64d5171 (Up to utils)
 
+=======
+>>>>>>> d03825c01 (Start execute operation)
 ### `@apollo/server-plugin-operation-registry`
 The plugin `apollo-server-plugin-operation-registry` has been renamed to `@apollo/server-plugin-operation-registry`.
 
