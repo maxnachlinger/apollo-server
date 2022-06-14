@@ -769,19 +769,64 @@ const { url } = await startStandaloneServer(apolloServerInstance, {
 
 Fields containing a specific context _value_ (such as on `GraphQLRequestContext`, the first argument to all plugin functions) are now named `contextValue`.
 
-### `executeOperation` accepts `context` value
+### `executeOperation` accepts `context` object
 
-`server.executeOperation` now takes a context *value* rather than arguments to pass to your context function.
+The [`server.executeOperation`](apollo-server/api/apollo-server/#executeoperation) method enables you to test GraphQL operations through Apollo Server's request pipeline without sending an HTTP request. In Apollo Server 3, the `executeOperation` method accepts a second optional argument passed to the `ApolloServer`'s `context` function.
 
-Note that we now differentiate in names between
-"contextFunction" (a function returning a context object) and "context"
-(the context object itself, eg as an argument to executeOperation).
+In Apollo Server 4, we simplify this by enabling you to pass an object to use as the `context` to the `executeOperation` method.  This lets you unit-test your `context` function's behavior directly:
 
-This also simplifies executeOperation, where you just pass a context
-object directly instead of arguments to your (probably already
-fake-for-testing) context function.
+<MultiCodeBlock>
 
-We found that in practice, that’s what people actually wanted in tests. If you want to test the behavior of your context function, you can unit-test it directly.
+```ts {17-20}
+interface MyContext {
+  name: string;
+}
+
+const server = new ApolloServer<MyContext>({
+  typeDefs: "type Query { hello: String!}",
+  resolvers:
+    Query: {
+      hello: (_, __, context) => `Hello ${context.name}!`,
+    },
+});
+
+const { result } = await server.executeOperation(
+  {
+    query: 'query helloContext { hello }',
+  },
+  // This second optional argument will be used as the context object
+  {
+    name: 'world',
+  },
+);
+
+expect(result.data?.hello).toBe('Hello world!');
+```
+
+```js {13-16}
+const server = new ApolloServer({
+  typeDefs: "type Query { hello: String!}",
+  resolvers:
+    Query: {
+      hello: (_, __, context) => `Hello ${context.name}!`,
+    },
+});
+
+const { result } = await server.executeOperation(
+  {
+    query: 'query helloContext { hello }',
+  },
+  // This second optional argument is used as a  context object
+  // for executeOperation
+  {
+    name: 'world',
+  },
+);
+
+expect(result.data?.hello).toBe('Hello world!');
+```
+
+</MultiCodeBlock>
 
 ### HTTP batching as opt-in feature
 
@@ -870,7 +915,7 @@ Whereas this query would be invalid:
 
 Apollo Server 4's default development landing page is now an embedded Apollo Sandbox, enabling you to run GraphQL operations with no additional CORS set up. If you want to use Apollo Server's default landing page instead, pass `ApolloServerPluginLandingPageLocalDefault({embed: false})` to the plugins for your `ApolloServer` constructor.
 
-
+{/* ROSE TODO */}
 ### Change CacheScope enum to a pure type
 
 <!-- In Apollo Server 4 the `CacheControlScope` enum has been changed into a union of strings type (`PUBLIC` or `PRIVATE`). This mean you can’t write `CacheScope.public` anymore
@@ -879,7 +924,7 @@ Apollo Server 4's default development landing page is now an embedded Apollo San
 
 In Apollo Server 3, you can use the [`@cacheControl`](/apollo-server/performance/caching/#in-your-schema-static) to define caching behavior on a per-field basis. Under the hood, the `@cacheControl` directive uses a `CacheControlScope` enum.
 
-Users will write 'PUBLIC' directly instead of `CacheScope.Public`. Note that if they are using TypeScript this is still perfectly type-safe (a typo will fail to compile); and if they're not using TypeScript, well misspelling `public` doesn't crash Node either, so perhaps they should use TypeScript if they care about such things.
+Users will write 'PUBLIC' directly instead of `CacheScope.Public`. Note that if they are using TypeScript, this is still perfectly type-safe (a typo will fail to compile); and if they're not using TypeScript, well misspelling `public` doesn't crash Node either, so perhaps they should use TypeScript if they care about such things.
 
 ```ts
 enum CacheControlScope {
@@ -1009,17 +1054,4 @@ Apollo Server v3.2.0 added a "draining" phase to server shutdown which allows a 
 `GraphQLResponse` object (eg `requestContext.response`) has been refactored: the `data`, `errors`, and `extensions` fields are on a `result` sub-object. (This will change further for incremental delivery.) `data` and `extensions` are now `Record<string, unknown>` rather than `Record<string, any>` so more casts may be needed. `GraphQLRequestContext.response` and `GraphQLResponse.http` are now always set.
 
 
-### `requestDidStart` hooks
-In Apollo Server 4, the `requestDidStart` hooks are called in parallel rather than in series.
 
-
-# Upcoming Stuff to Cover:
-- Move other plugins to their own repositories
-- Change usage reporting defaults backwards-incompatibly to send less data
-- `ApolloServer.logger` should probably be public readonly in AS4
-- In general we just need to go over the full exported API and list what’s gone and where it’s gone. (This includes the re-export of `gql` from `graphql-tag`)
-
-### `apollo-datasource-rest` and `apollo-datasource`
-Rename `apollo-datasource-rest` to `@apollo/datasource-rest`: ???
-
-Rename `apollo-datasource` to `@apollo/datasource`: https://github.com/apollographql/apollo-datasource
