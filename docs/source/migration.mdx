@@ -18,7 +18,6 @@ During Apollo Server 4's alpha, we are actively looking to gather feedback and [
 
 > For a list of all breaking changes, see the [changelog](https://github.com/apollographql/apollo-server/blob/main/CHANGELOG.md).
 
-
 ## Bumped dependencies
 
 ### Node.js
@@ -49,6 +48,7 @@ graph TB;
   express--Yes-->useExpressMiddleware("Use the expressMiddleware function");
   class useStandAlone,useExpressMiddleware secondary;
 ```
+
 Those using the `apollo-server` package should use the [`startStandaloneServer`](#startstandaloneserver-function) function. Those using the `apollo-server-express` package should use the [`expressMiddleware`](#expressmiddleware) function.
 
 If you are using any package other than `apollo-server` or `apollo-server-express` then you can’t upgrade during the AS4 alpha release _yet_. Help us by [building new integrations](/building-integrations) or [joining the discussion for maintaining integrations](https://github.com/apollographql/apollo-server/labels/integration-collaborators) to ensure we have an integration for your favorite framework.
@@ -915,24 +915,14 @@ Whereas this query would be invalid:
 
 Apollo Server 4's default development landing page is now an embedded Apollo Sandbox, enabling you to run GraphQL operations with no additional CORS set up. If you want to use Apollo Server's default landing page instead, pass `ApolloServerPluginLandingPageLocalDefault({embed: false})` to the plugins for your `ApolloServer` constructor.
 
-{/* ROSE TODO */}
-### Change CacheScope enum to a pure type
-
-<!-- In Apollo Server 4 the `CacheControlScope` enum has been changed into a union of strings type (`PUBLIC` or `PRIVATE`). This mean you can’t write `CacheScope.public` anymore
-- The enum CacheScope is now union of strings type
-  - (scope: CacheScope.Private -> scope: 'PRIVATE') -->
-
-In Apollo Server 3, you can use the [`@cacheControl`](/apollo-server/performance/caching/#in-your-schema-static) to define caching behavior on a per-field basis. Under the hood, the `@cacheControl` directive uses a `CacheControlScope` enum.
-
-Users will write 'PUBLIC' directly instead of `CacheScope.Public`. Note that if they are using TypeScript, this is still perfectly type-safe (a typo will fail to compile); and if they're not using TypeScript, well misspelling `public` doesn't crash Node either, so perhaps they should use TypeScript if they care about such things.
+### `CacheScope` type
+In Apollo Server 4,  `CacheScope` is now a union of strings (`PUBLIC` or `PRIVATE`):
 
 ```ts
-enum CacheControlScope {
-  PUBLIC
-  PRIVATE
-}
+export type CacheScope = 'PUBLIC' | 'PRIVATE';
 ```
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 
 <<<<<<< HEAD
@@ -1025,17 +1015,21 @@ The plugin `apollo-server-plugin-operation-registry` has been renamed to `@apoll
 
 ### New wrapper around `keyV`
 We've decided to continue maintaining our own cache interface and instead offer a small wrapper around [`keyv`](https://www.npmjs.com/package/keyv) that users can choose to use themselves. This nicely guarantees our API regardless of the choices made by `keyv` (we just have to update the wrapper if anything changes).
+=======
+This means you can write `PUBLIC` directly when referring to `CacheScope` (i.e., instead of `CacheScope.Public`).
+>>>>>>> d6bd791b7 (keyv phrasing)
 
-The `Cache` and `keyv` binding can now be found in the utils monorepo, published under the packages:
+### Default cache is bounded
 
-- `@apollo/utils.keyvaluecache`
-- `@apollo/utils.keyvadapter`
+By default, Apollo Server uses an in-memory cache backend to optimize the performance of several features (including APQs, the response cache plugin, and `RESTDataSource`).
 
-We no longer maintain `apollo-server-cache-memcached` or `apollo-server-cache-redis`.
+Versions of Apollo Server before 3.9 use the `apollo-server-caching` package to implement this cache. The `apollo-server-caching` package is no longer maintained, and we do not recommend using it. By default, versions of Apollo Server 3.9+ use an unbounded cache under the hood, which is not safe for production use. To learn more, see [Configuring cache backends](/apollo-server/performance/cache-backends).
 
-Existing implementations of `KeyValueCache` should continue to work. Additionally, the default cache is now bounded, any previous mentions of `cache: 'bounded'` can now be deleted.
+By default, Apollo Server 4 uses a bounded in-memory cache backend (which is safe for production). If you want to customize your cache implementation, Apollo provides two wrapper packages to help with this process:
+* [`@apollo/utils.keyvadapter`](https://github.com/apollographql/apollo-utils/tree/main/packages/keyvAdapter) - provides a [`KeyvAdapter`](https://github.com/apollographql/apollo-utils/tree/main/packages/keyvAdapter#keyvadapter-class) wrapper class to use alongside the [`keyv`](https://www.npmjs.com/package/keyv) package.
+* [`@apollo/utils.keyvaluecache`](https://github.com/apollographql/apollo-utils/tree/main/packages/keyValueCache) - provides both the [`KeyValueCache`](https://github.com/apollographql/apollo-utils/tree/main/packages/keyValueCache#keyvaluecache-interface) interface and a [`InMemoryLRUCache`](https://github.com/apollographql/apollo-utils/tree/main/packages/keyValueCache#inmemorylrucache) class (a wrapper around the `lru-cache` package).
 
-Mention that specifically redis users currently get a 300s default TTL, which will change when they move to Keyv. Our other cache implementations don't do this. This may or may not be worth mentioning since they should be reading the documentation for @keyv/redis when they make the switch and should configure it to their needs. But it wouldn't hurt to at least point it out.
+For examples of using both `KeyvAdapter` and `InMemoryLRUCache`, see [Configuring external caching](/apollo-server/performance/cache-backends#configuring-external-caching).
 
 ### Top-level error handling changes
 Previously, some errors (mostly those that indicated the GraphQL operation was not being provided correctly over HTTP/JSON) were returned as `text/plain` error messages. Now all responses (other than landing pages) rendered by Apollo Server are `application/json` JSON responses; single-error responses are rendered as `{"errors":[{"message": "..."}]}` like any other GraphQL error. The `formatError` hook is used on all of these errors.
@@ -1048,6 +1042,9 @@ Instead of subclassing `ApolloServer` and overriding `serverlessFramework()` to 
 ### New warning when starting to execute an operation during shutdown
 
 Apollo Server v3.2.0 added a "draining" phase to server shutdown which allows a server to complete in-progress operations before continuing to shut down. (This is set up automatically for you when using `startStandaloneServer` and can be configured with `ApolloServerPluginDrainHttpServer` when using `expressMiddleware` or other `http.Server`-based web servers.) If you do not drain your server, incoming operations can be sent to your server after it has already been stopped, which will fail. In Apollo Server 4, if a server receives an operation after the "draining" phase continues, it will log a warning encouraging you to set up draining before failing the operation.
+
+### `@apollo/server-plugin-operation-registry`
+The plugin `apollo-server-plugin-operation-registry` has been renamed to `@apollo/server-plugin-operation-registry`.
 
 ### Changed update these
 
