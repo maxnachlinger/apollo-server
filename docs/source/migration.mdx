@@ -1023,33 +1023,66 @@ This means you can write `PUBLIC` directly when referring to `CacheScope` (i.e.,
 
 By default, Apollo Server uses an in-memory cache backend to optimize the performance of several features (including APQs, the response cache plugin, and `RESTDataSource`).
 
-Versions of Apollo Server before 3.9 use the `apollo-server-caching` package to implement this cache. The `apollo-server-caching` package is no longer maintained, and we do not recommend using it. By default, versions of Apollo Server 3.9+ use an unbounded cache under the hood, which is not safe for production use. To learn more, see [Configuring cache backends](/apollo-server/performance/cache-backends).
+Versions of Apollo Server before 3.9 use the `apollo-server-caching` package to implement this cache. The `apollo-server-caching` package is no longer maintained, and we do not recommend using it. By default, [versions of Apollo Server 3.9+](https://github.com/apollographql/apollo-server/blob/HEAD/CHANGELOG.md#v390) use an unbounded cache under the hood, which is not safe for production use. To learn more, see [Configuring cache backends](/apollo-server/performance/cache-backends).
 
 By default, Apollo Server 4 uses a bounded in-memory cache backend (which is safe for production). If you want to customize your cache implementation, Apollo provides two wrapper packages to help with this process:
 * [`@apollo/utils.keyvadapter`](https://github.com/apollographql/apollo-utils/tree/main/packages/keyvAdapter) - provides a [`KeyvAdapter`](https://github.com/apollographql/apollo-utils/tree/main/packages/keyvAdapter#keyvadapter-class) wrapper class to use alongside the [`keyv`](https://www.npmjs.com/package/keyv) package.
-* [`@apollo/utils.keyvaluecache`](https://github.com/apollographql/apollo-utils/tree/main/packages/keyValueCache) - provides both the [`KeyValueCache`](https://github.com/apollographql/apollo-utils/tree/main/packages/keyValueCache#keyvaluecache-interface) interface and a [`InMemoryLRUCache`](https://github.com/apollographql/apollo-utils/tree/main/packages/keyValueCache#inmemorylrucache) class (a wrapper around the `lru-cache` package).
+* [`@apollo/utils.keyvaluecache`](https://github.com/apollographql/apollo-utils/tree/main/packages/keyValueCache) - provides both the [`KeyValueCache`](https://github.com/apollographql/apollo-utils/tree/main/packages/keyValueCache#keyvaluecache-interface) TypeScript interface and a [`InMemoryLRUCache`](https://github.com/apollographql/apollo-utils/tree/main/packages/keyValueCache#inmemorylrucache) class (a wrapper around the `lru-cache` package).
 
 For examples of using both `KeyvAdapter` and `InMemoryLRUCache`, see [Configuring external caching](/apollo-server/performance/cache-backends#configuring-external-caching).
 
 ### Top-level error handling changes
 
-Previously, some errors (mostly those that indicated the GraphQL operation was not being provided correctly over HTTP/JSON) were returned as `text/plain` error messages. Now all responses (other than landing pages) rendered by Apollo Server are `application/json` JSON responses; single-error responses are rendered as `{"errors":[{"message": "..."}]}` like any other GraphQL error. The `formatError` hook is used on all of these errors.
-New plugin hooks `startupDidFail`, `contextCreationDidFail`, `invalidRequestWasReceived`, and `unexpectedErrorProcessingRequest` allow plugins to observe errors in new settings.
-If `resolveOperation` or the `execute` function throws, the error will be rendered with HTTP status code 500 rather than 400. (Note that `execute` throwing is distinct from `execute` returning a non-empty list of errors, which is the more common case.)
+Apollo Server 3 returned certain errors relating to GraphQL operations over `HTTP`/`JSON` as `text/plain` error messages.
+
+Apollo Server 4 returns all non-landing-page-related responses as `application/json` JSON responses. This means all single-error responses render like any other GraphQL error:
+
+```json disableCopy
+{
+  "errors":[{"message": "..."}]
+}
+```
+
+Additionally, the [`formatError` hook](/apollo-server/data/errors/#for-client-responses) receives and can format all of these error instances.
+
+Apollo Server 4 also introduces new plugin hooks `startupDidFail`, `contextCreationDidFail`, `invalidRequestWasReceived`, and `unexpectedErrorProcessingRequest`, enabling plugins to observe errors in new settings.
+
+In Apollo Server 4, if either the `resolveOperation` or `execute` function throws an error, that error is rendered with the `HTTP` status code 500 (rather than 400). Note that the `execute` function more commonly returns a non-empty list of errors rather than throwing an explicit error.
 
 ### New approach to serverless frameworks
-Instead of subclassing `ApolloServer` and overriding `serverlessFramework()` to return `true`, serverless integrations differentiate themselves from other integrations by calling `server.startInBackgroundHandlingStartupErrorsByLoggingAndFailingAllRequests()`; other integrations expect the caller to first call `await server.start()` and validate this with `server.assertStarted()`.
+
+In Apollo Server 3, our approach to creating serverless frameworks involved subclassing `ApolloServer` and overriding the [`serverlessFramework()`](https://github.com/apollographql/apollo-server/blob/5188b1ee408b5e2a983662b0f3a15283c071e522/packages/apollo-server-core/src/ApolloServer.ts#L813) function to return `true`.
+
+In Apollo Server 4,  serverless integrations differentiate themselves from other integrations by calling `server.startInBackgroundHandlingStartupErrorsByLoggingAndFailingAllRequests()`. The length of the function's name discourages its use directly by integration writers when building non-serverless apps because the shorter `await server.start()` s available.
+
+Apollo Server 4's other framework integrations expect the developer first to call `await server.start()`, before validating that the server has started by calling `server.assertStarted()`.
 
 ### New warning when starting to execute an operation during shutdown
 
-Apollo Server v3.2.0 added a "draining" phase to server shutdown which allows a server to complete in-progress operations before continuing to shut down. (This is set up automatically for you when using `startStandaloneServer` and can be configured with `ApolloServerPluginDrainHttpServer` when using `expressMiddleware` or other `http.Server`-based web servers.) If you do not drain your server, incoming operations can be sent to your server after it has already been stopped, which will fail. In Apollo Server 4, if a server receives an operation after the "draining" phase continues, it will log a warning encouraging you to set up draining before failing the operation.
+Apollo Server v3.2.0 added a "draining" phase to server shutdown, which enables a server to complete in-progress operations before continuing to shut down. Without this draining phase, operations can reach your server even after it has stopped causing those operations to fail.
+
+In Apollo Server 4, if a server receives an operation after the "draining" phase, it will log a warning encouraging you to set up draining before failing the operation.
+
+Note, those using the `startStandaloneServer` function have their server drained automatically. If you are using `expressMiddleware` or another `http.Server`-based web servers, you can add "draining" using the  [`ApolloServerPluginDrainHttpServer` plugin](/apollo-server/api/plugin/drain-http-server/#using-the-plugin).
+
+### `GraphQLResponse`
+
+In Apollo Server 4, we refactored the [`GraphQLResponse` object](https://github.com/apollographql/apollo-server/blob/version-4/packages/server/src/externalTypes/graphql.ts#L25) (e,g., `requestContext.response`). The `data`, `errors`, and `extensions` fields are now within an object from the `result` field:
+
+``` ts disableCopy
+export interface GraphQLResponse {
+  // The below result field contains an object with the
+  //  data, errors, and extensions fields
+  result: FormattedExecutionResult;
+  http: HTTPGraphQLHead;
+}
+```
+
+The `data` and `extensions` fields are both now opf type `Record<string, unknown>`, rather than `Record<string, any>`. Additionally, `GraphQLRequestContext.response` and `GraphQLResponse.http` are always set.
 
 ### `@apollo/server-plugin-operation-registry`
-The plugin `apollo-server-plugin-operation-registry` has been renamed to `@apollo/server-plugin-operation-registry`.
+The plugin `apollo-server-plugin-operation-registry` has been renamed `@apollo/server-plugin-operation-registry`.
 
-### Changed update these
-
-`GraphQLResponse` object (eg `requestContext.response`) has been refactored: the `data`, `errors`, and `extensions` fields are on a `result` sub-object. (This will change further for incremental delivery.) `data` and `extensions` are now `Record<string, unknown>` rather than `Record<string, any>` so more casts may be needed. `GraphQLRequestContext.response` and `GraphQLResponse.http` are now always set.
 
 
 

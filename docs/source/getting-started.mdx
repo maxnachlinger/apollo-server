@@ -1,5 +1,6 @@
 ---
-title: Getting Started with Apollo Server
+title: Get Started with Apollo Server
+description: ""
 ---
 
 This tutorial helps you:
@@ -9,16 +10,7 @@ This tutorial helps you:
 * Run an instance of Apollo Server that lets you execute queries against your schema
 
 This tutorial assumes that you are familiar with the command line and
-TypeScript or JavaScript, and that you have a recent version of Node.js (14+) installed.
-
-If you do not already have TypeScript installed on your computer, install it now:
-
-```bash
-npm install -g typescript
-```
-
-> This tutorial walks you through installing and configuring Apollo Server.
-> For a more complete introduction to the entire Apollo platform, check out [Odyssey](https://www.apollographql.com/tutorials/lift-off-part1), Apollo's new learning platform.
+TypeScript or JavaScript, and that you have a recent version of Node.js (14+) installed. If you are unfamiliar with TypeScript, but would like to try it out, this tutorial guides you through the basics of installing and compiling TypeScript code.
 
 ## Step 1: Create a new project
 
@@ -44,36 +36,45 @@ Applications that run Apollo Server require two top-level dependencies:
 <!-- TODO: CHECK THIS LINK once packaged published -->
 * [`@apollo/server`](https://www.npmjs.com/package/@apollo/server) is the core library for Apollo Server itself, which helps you define the shape of your data and how to fetch it.
 * [`graphql`](https://npm.im/graphql) is the library used to build a GraphQL schema and execute queries against it.
+* [`graphql-tag`](https://www.npmjs.com/package/graphql-tag) is the library that includes template literal tag that parses GraphQL query strings into the standard GraphQL AST.
 
 Run the following command to install all of these dependencies and save them in
 your project's `node_modules` directory:
 
 ```bash
-npm install @apollo/server graphql cors
+  npm install @apollo/server graphql graphql-tag
 ```
 
-Also create an empty `index.ts` file in your project's root directory:
+If you are using JavaScript, create a `src/index.js` file. If you are using TypeScript, create a `src/index.ts` file:
 
 ```bash
-touch src/index.ts
+  touch src/index.ts
 ```
 
-To keep things simple, `index.ts` will contain **all** of the code for this example application.
+To keep things simple, this `index` file will contain **all** of the code for our example application.
 
-### Set up TypeScript
-Next we'll set up and configure TypeScript to compile our code. We'll install `typescript`:
+<ExpansionPanel title="Expand to set up TypeScript (Optional)">
+
+#### Set up TypeScript
+
+If you do not already have TypeScript installed on your computer, install it globally now:
+```bash
+npm install -g typescript
+```
+
+Next, we'll set up and configure TypeScript to compile the code in our project. Start by installing `typescript` in the project:
 
 ```bash
 npm install typescript
 ```
 
-Now run the `tsc --init` command which will create a `tsconfig.json` file:
+Next, run the `tsc --init` command, which creates a `tsconfig.json` file:
 
 ```bash
 tsc --init
 ```
 
-Inside your new `tsconfig.json` file add the following configuration:
+Inside the new `tsconfig.json` file add the following configuration:
 
 ```json title="tsconfig.json"
 {
@@ -89,9 +90,9 @@ Inside your new `tsconfig.json` file add the following configuration:
 }
 ```
 
-For more information on the compiler options above check out the [TypeScript Compiler documentation](https://www.typescriptlang.org/tsconfig).
+For more information on the compiler options above, see the [TypeScript Compiler documentation](https://www.typescriptlang.org/tsconfig).
 
-Finally we'll add a `type` and `scripts` to the `package.json` file you previously created:
+Finally, add a `type` and `scripts` to the `package.json` file you previously created:
 ```json title="package.json"
 {
   // ...etc.
@@ -103,16 +104,36 @@ Finally we'll add a `type` and `scripts` to the `package.json` file you previous
 }
 ```
 
-Setting your project's [`type` to `module`](https://nodejs.org/api/packages.html#approach-1-use-an-es-module-wrapper) to transpile ES module sources into `CommonJS`, enabling you to use a top-level [`await`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function).
+The above `start` script will compile your code into TypeScript before running it with `node`. Setting your project's [`type` to `module`](https://nodejs.org/api/packages.html#approach-1-use-an-es-module-wrapper) will transpile ES module sources into `CommonJS`, enabling you to use a top-level [`await`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function) calls.
+
+</ExpansionPanel>
+
+If you are using JavaScript add this following script to your `package.json`:
+
+```json title="package.json"
+{
+  "scripts": {
+    "start": "node index.js"
+  },
+  // other dependencies
+}
+```
 
 ## Step 3: Define your GraphQL schema
+
+> The code blocks below use TypeScript by default. You can use the dropdown menu above each code block to switch to JavaScript.
+>
+>If you're using JavaScript, use .js and .jsx file extensions wherever .ts and .tsx appear.
 
 Every GraphQL server (including Apollo Server) uses a **schema** to define the structure of data that clients can query. In this example, we'll create a server for querying a collection of books by title and author.
 
 Open `index.ts` in your preferred code editor and paste the following into it:
 
-```js title="index.ts"
-const { ApolloServer, startStandaloneServer, gql } = require('@apollo/server');
+<MultiCodeBlock>
+
+```ts title="index.ts"
+const { ApolloServer, startStandaloneServer } = require('@apollo/server');
+import { gql } from 'graphql-tag';
 
 // A schema is a collection of type definitions (hence "typeDefs")
 // that together define the "shape" of queries that are executed against
@@ -135,6 +156,8 @@ const typeDefs = gql`
 `;
 ```
 
+</MultiCodeBlock>
+
 This snippet defines a simple, valid GraphQL schema. Clients will be able to execute a query named `books`, and our server will return an array of zero or more `Book`s.
 
 ## Step 4: Define your data set
@@ -144,9 +167,11 @@ Now that we've defined the _structure_ of our data, we can define the data itsel
 Apollo Server can fetch data from any source you connect to (including a database, a REST API, a static object storage service, or even another GraphQL
 server). For the purposes of this tutorial, we'll hardcode our example data.
 
-Add the following to the bottom of `index.ts`:
+Add the following to the bottom of your `index.tx` file:
 
-```js title="index.ts"
+<MultiCodeBlock>
+
+```ts title="index.ts"
 const books = [
   {
     title: 'The Awakening',
@@ -159,6 +184,8 @@ const books = [
 ];
 ```
 
+</MultiCodeBlock>
+
 This snippet defines a simple data set that clients can query. Notice that the two objects in the array each match the structure of the `Book` type we defined in our schema.
 
 ## Step 5: Define a resolver
@@ -167,9 +194,11 @@ We've defined our data set, but Apollo Server doesn't know that it should _use_ 
 
 Resolvers tell Apollo Server _how_ to fetch the data associated with a particular type. Because our `Book` array is hardcoded, the corresponding resolver is straightforward.
 
-Add the following to the bottom of `index.ts`:
+Add the following to the bottom of your `index.ts` file:
 
-```js title="index.ts"
+<MultiCodeBlock>
+
+```ts title="index.ts"
 // Resolvers define the technique for fetching the types defined in the
 // schema. This resolver retrieves books from the "books" array above.
 const resolvers = {
@@ -179,17 +208,20 @@ const resolvers = {
 };
 ```
 
+</MultiCodeBlock>
+
 ## Step 6: Create an instance of `ApolloServer`
 
 We've defined our schema, data set, and resolver. Now we need to provide
 this information to Apollo Server when we initialize it.
 
-Add the following to the bottom of `index.ts`:
+Add the following to the bottom of your `index.ts` file:
 
-```js title="index.ts"
+<MultiCodeBlock>
+
+```ts title="index.ts"
 // The ApolloServer constructor requires two parameters: your schema
 // definition and your set of resolvers.
-// and returns an ApolloServerStandalone instance.
 const apolloServerInstance = new ApolloServer({
   typeDefs,
   resolvers,
@@ -202,6 +234,8 @@ const { url } = await startStandaloneServer(apolloServerInstance, { listen: { po
 console.log(`🚀  Server ready at: ${url}`);
 ```
 
+</MultiCodeBlock>
+
 ## Step 7: Start the server
 
 We're ready to start our server! Run the following from your project's root
@@ -211,7 +245,7 @@ directory:
 npm start
 ```
 
-After TypeScript finishes compiling, you should see the following output:
+You should now see the following output at the bottom of your terminal:
 
 ```
 🚀  Server ready at: http://localhost:4000/
@@ -223,20 +257,9 @@ We're up and running!
 
 We can now execute GraphQL queries on our server. To execute our first query, we can use [**Apollo Sandbox**](/studio/explorer/sandbox/).
 
-Visit `http://localhost:4000` in your browser. Apollo Server's default landing page appears:
+Visit `http://localhost:4000` in your browser, which will opent the Apollo Studio Sandbox:
 
-<!-- TODO add and double check all these images before publishing -->
-<img class="screenshot" src="./images/as-landing-page.jpg" alt="Apollo Server default landing page" width="350"/>
-
-Click **Query your server** to open Sandbox.
-
-> You can also:
->
-> * Select **Automatically redirect to Studio next time** if you want to open Sandbox automatically whenever you visit `localhost:4000`
-> * Open Sandbox directly at [studio.apollographql.com/sandbox](https://studio.apollographql.com/sandbox)
-
-<!-- TODO check all the below images -->
-<img class="screenshot" src="./images/sandbox.jpg" alt="Apollo Sandbox"/>
+<img class="screenshot" src="./images/sandbox.jpeg" alt="Apollo Sandbox"/>
 
 The Sandbox UI includes:
 
@@ -260,9 +283,8 @@ query GetBooks {
 
 Paste this string into the Operations panel and click the blue button in the upper right. The results (from our hardcoded data set) appear in the Response panel:
 
-<img class="screenshot" src="./images/sandbox-response.jpg" width="400" alt="Sandbox response panel"/>
+<img class="screenshot" src="./images/sandbox-response.png" width="400" alt="Sandbox response panel"/>
 
-<!-- TODO: Add link back in to constructor -->
 > **Note:** If your server is deployed to an environment where `NODE_ENV` is set to `production`, introspection is **disabled** by default. This prevents Apollo Sandbox from working properly. To enable introspection, set `introspection: true` in the options to `ApolloServer`'s constructor.
 
 One of the most important concepts of GraphQL is that clients can choose to query _only for the fields they need_. Delete `author` from the query string and execute it again. The response updates to include only the `title` field for each book!
@@ -270,8 +292,8 @@ One of the most important concepts of GraphQL is that clients can choose to quer
 ## Combined example
 
 You can view and fork this complete example on CodeSandbox:
-<!-- TODO: Recreate this sandbox -->
-<a href="https://codesandbox.io/s/github/apollographql/docs-examples/tree/main/apollo-server/v3/getting-started?fontsize=14&hidenavigation=1&theme=dark">
+<!-- TODO: Fix this sandbox link after docs examples is up -->
+<a href="https://codesandbox.io/s/github/apollographql/docs-examples/tree/RK/add-as4-getting-started/apollo-server/v4/getting-started?fontsize=14&hidenavigation=1&theme=dark">
   <img alt="Edit server-getting-started" src="https://codesandbox.io/static/img/play-codesandbox.svg" />
 </a>
 
@@ -281,9 +303,9 @@ This example application is a great starting point for working with
 Apollo Server. Check out the following resources to learn more about the basics
 of schemas, resolvers, and deployment:
 
-* [Schema basics](./schema/schema/)
-* [Resolvers](./data/resolvers/)
-* [Deploying with Heroku](./deployment/heroku/)
+* [Schema basics](/apollo-server/schema/schema/)
+* [Resolvers](/apollo-server/data/resolvers/)
+* [Deploying with Heroku](/apollo-server/deployment/heroku/)
 
 Want to learn how to modularize and scale a GraphQL API?  Check out the [Apollo Federation Docs](/federation) to learn how a federated architecture can create a unified *supergraph* that combines multiple GraphQL APIs.
 
