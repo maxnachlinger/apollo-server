@@ -3,17 +3,12 @@ title: Building Integrations for Apollo Server
 description: ""
 ---
 
-Apollo Server 4 comes with a stable well-defined API for processing HTTP requests and responses.
+One of the driving forces behind Apollo Server 4 was the creation of a stable, well-defined API for processing HTTP requests and responses. This new API makes opens up the possibility for external collaborators to build integrations for their framework of choice for Apollo Server 4.
+## Building a integration package
 
-Writing and maintain integrations should be much easier in the new model, because the only responsibility of these packages will be translating requests and responses between the framework's native format and the types used by ApolloServer's API.
+The primary responsibility of an integration for Apollo Server 4 is translating requests and responses between the framework's native format and the types used by `ApolloServer`'s API.
 
-## Integration framework function
-
-Framework integration packages can export functions or classes that take in `ApolloServer` and call its methods appropriately instead of adding their own methods to the object.
-
-Your integration should expect to intake an `ApolloServer` instance, after the `start()` function has been called upon it.
-
-This is often done by passing the server instance to your framework specific middleware function, like we do with the `expressMiddleware` function:
+Your integration should expect to intake an `ApolloServer` instance, after the `server.start()` function has been called upon it. This is often done by passing the server instance to your framework specific middleware function, like we do with the `expressMiddleware` function:
 
 <MultiCodeBlock>
 

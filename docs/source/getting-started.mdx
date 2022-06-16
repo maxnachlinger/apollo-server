@@ -10,7 +10,7 @@ This tutorial helps you:
 * Run an instance of Apollo Server that lets you execute queries against your schema
 
 This tutorial assumes that you are familiar with the command line and
-TypeScript or JavaScript, and that you have a recent version of Node.js (14+) installed. If you are unfamiliar with TypeScript, but would like to try it out, this tutorial guides you through the basics of installing and compiling TypeScript code.
+JavaScript, and that you have a recent version of Node.js (14+) installed. Note, this tutorial walks through how to set up Apollo Server using either JavaScript or TypeScript.
 
 ## Step 1: Create a new project
 
@@ -33,10 +33,10 @@ Your project directory now contains a `package.json` file.
 
 ## Step 2: Install dependencies
 Applications that run Apollo Server require two top-level dependencies:
-<!-- TODO: CHECK THIS LINK once packaged published -->
 * [`@apollo/server`](https://www.npmjs.com/package/@apollo/server) is the core library for Apollo Server itself, which helps you define the shape of your data and how to fetch it.
 * [`graphql`](https://npm.im/graphql) is the library used to build a GraphQL schema and execute queries against it.
-* [`graphql-tag`](https://www.npmjs.com/package/graphql-tag) is the library that includes template literal tag that parses GraphQL query strings into the standard GraphQL AST.
+
+We'll also install the [`graphql-tag`](https://www.npmjs.com/package/graphql-tag) package, which includes a template literal tag that parses GraphQL query strings.
 
 Run the following command to install all of these dependencies and save them in
 your project's `node_modules` directory:
@@ -53,28 +53,28 @@ If you are using JavaScript, create a `src/index.js` file. If you are using Type
 
 To keep things simple, this `index` file will contain **all** of the code for our example application.
 
-<ExpansionPanel title="Expand to set up TypeScript (Optional)">
+<ExpansionPanel title="Expand to learn how to set up TypeScript (Optional)">
 
 #### Set up TypeScript
 
-If you do not already have TypeScript installed on your computer, install it globally now:
+1. If you do not already have TypeScript installed on your computer, install it globally now:
 ```bash
 npm install -g typescript
 ```
 
-Next, we'll set up and configure TypeScript to compile the code in our project. Start by installing `typescript` in the project:
+2. Run the following command to install TypeScript into your project's dependencies:
 
 ```bash
 npm install typescript
 ```
 
-Next, run the `tsc --init` command, which creates a `tsconfig.json` file:
+3. You can now run the `tsc --init` command, which creates a `tsconfig.json` file:
 
 ```bash
 tsc --init
 ```
 
-Inside the new `tsconfig.json` file add the following configuration:
+4. The `tsconfig.json` file enables us to configure how TypeScript will compile our code. Add the following configuration to your `tsconfig.json`:
 
 ```json title="tsconfig.json"
 {
@@ -92,7 +92,7 @@ Inside the new `tsconfig.json` file add the following configuration:
 
 For more information on the compiler options above, see the [TypeScript Compiler documentation](https://www.typescriptlang.org/tsconfig).
 
-Finally, add a `type` and `scripts` to the `package.json` file you previously created:
+5. Finally, add a `type` and `scripts` to the `package.json` file you previously created:
 ```json title="package.json"
 {
   // ...etc.
@@ -104,11 +104,11 @@ Finally, add a `type` and `scripts` to the `package.json` file you previously cr
 }
 ```
 
-The above `start` script will compile your code into TypeScript before running it with `node`. Setting your project's [`type` to `module`](https://nodejs.org/api/packages.html#approach-1-use-an-es-module-wrapper) will transpile ES module sources into `CommonJS`, enabling you to use a top-level [`await`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function) calls.
+The above `start` script will compile your code into TypeScript before running it with `node`. Setting your project's [`type` to `module`](https://nodejs.org/api/packages.html#approach-1-use-an-es-module-wrapper) will transpile ES module sources into `CommonJS`, enabling you to use top-level [`await`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function) calls.
 
 </ExpansionPanel>
 
-If you are using JavaScript add this following script to your `package.json`:
+If you are using JavaScript, add the below following script to your `package.json`:
 
 ```json title="package.json"
 {

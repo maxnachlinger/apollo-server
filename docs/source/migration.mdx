@@ -832,7 +832,7 @@ new ApolloServer<{ foo: number }>({
 
 ### `executeOperation` accepts `context` object
 
-The [`server.executeOperation`](apollo-server/api/apollo-server/#executeoperation) method enables you to test GraphQL operations through Apollo Server's request pipeline without sending an HTTP request. In Apollo Server 3, the `executeOperation` method accepts a second optional argument which is passed to an `ApolloServer` instance's `context` function.
+The [`server.executeOperation`](/apollo-server/api/apollo-server/#executeoperation) method enables you to test GraphQL operations through Apollo Server's request pipeline without sending an HTTP request. In Apollo Server 3, the `executeOperation` method accepts a second optional argument which is passed to an `ApolloServer` instance's `context` function.
 
 In Apollo Server 4, we simplify this by enabling you to directly pass an object to use as the `context` for the `executeOperation` method.  This lets you unit-test your `context` function's behavior directly:
 
