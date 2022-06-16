@@ -10,11 +10,13 @@
   ],
   "sidebar": {
     "Introduction": "/",
+    "Get started": "/getting-started",
       "New in v4": {
       "Migrating to Apollo Server 4": "/migration",
       "Changelog": "https://github.com/apollographql/apollo-server/blob/main/CHANGELOG.md"
     },
-    "Get started": "/getting-started",
-    "Building an Integration": "/integrations/building-integrations"
+      "Integrations": {
+      "Building an Integration": "/integrations/building-integrations"
+    }
   }
 }
