@@ -41,9 +41,9 @@ For those migrating from Apollo Server 3 to Apollo Server 4, use the below flowc
 graph TB;
   server("Am I using the apollo-server package?");
   server--No-->express("Am I using the apollo-server-express package?");
-  server--Yes-->useStandAlone("Use the startStandaloneServer function");
+  server--Yes-->useStandAlone("Use the <code>startStandaloneServer</code> function");
   express--No-->buildIntegration("You can’t upgrade during the alpha <b>yet*</b>");
-  express--Yes-->useExpressMiddleware("Use the expressMiddleware function");
+  express--Yes-->useExpressMiddleware("Use the <code>expressMiddleware</code> function");
   class useStandAlone,useExpressMiddleware secondary;
 ```
 

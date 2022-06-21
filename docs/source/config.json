@@ -16,7 +16,7 @@
       "Changelog": "https://github.com/apollographql/apollo-server/blob/main/CHANGELOG.md"
     },
       "Integrations": {
-      "Building an Integration": "/integrations/building-integrations"
+      "Building integrations": "/integrations/building-integrations"
     }
   }
 }
