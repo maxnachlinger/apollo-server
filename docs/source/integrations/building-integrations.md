@@ -69,4 +69,3 @@ console.log(`🚀 Server ready at http://localhost:4000`);
 
 Note, that your integration is responsible for setting up [body-parser](https://www.npmjs.com/package/body-parser) and [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) configuration.
 
-

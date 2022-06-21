@@ -471,76 +471,16 @@ const apolloServerInstance = new ApolloServer<MyContext>({
 });
 ```
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-const { url } = await startStandaloneServer(apolloServerInstance, {
-  context: async ({req, _res}) => ({
-    token: await getTokenForRequest(req),
-  },
-  listen: { port: 4000 },
-});
-
-
-<<<<<<< HEAD
-<<<<<<< HEAD
-Note that you should only assume that the objects passed to your context function are http.IncomingMessage and http.ServerResponse objects, not necessarily their Express subclasses.
-=======
-=======
-As part of this change, if you don't provide your own logger, the default log level has been changed to `DEBUG` (e.g., instead of `INFO`).
-=======
-=======
->>>>>>> 3128a127b (Rebase and get up to date)
-=======
->>>>>>> 4ddf78827 (Start context section)
-As part of this change, if you don't provide your own logger, the default log level has been switched to `DEBUG` (e.g., instead of `INFO`).
-=======
 As part of this change, if you don't provide your own logger, the default log level is now set to `DEBUG` (instead of `INFO`).
->>>>>>> d43956fe9 (Another pass over migration)
 
 ### `Config` type name
 In Apollo Server 4, the TypeScript name of the constructor options object has changed from `Config` to the more aptly named, `ApolloServerOptions`.
 
 ## Changed Features
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-###  `ApolloServerStandalone` and `startStandaloneServer`
-Apollo Server 3 included a "batteries-included" version of `ApolloServer` designed to help developers get started quickly. This "batteries-included" version of `ApolloServer`  was less configurable, but included helpful defaults to reduce set up time.
->>>>>>> d8b77eefb (Start changed features)
-<<<<<<< HEAD
->>>>>>> 736356c2f (Start changed features)
-=======
-=======
-### `startStandaloneServer` function
-<<<<<<< HEAD
-Apollo Server 3 included a "batteries-included" `apollo-server` package, designed to help developers get started quickly. The "batteries-included" version of `ApolloServer`  was less configurable, but included helpful defaults to reduce set up time.
->>>>>>> 23ef9f211 (update from the version-4 branch)
-<<<<<<< HEAD
->>>>>>> adfe5453c (update from the version-4 branch)
-=======
-=======
-=======
-### `startStandaloneServer` function
->>>>>>> 4ddf78827 (Start context section)
-Apollo Server 3 has a "batteries-included" `apollo-server` package designed to help developers get started quickly. The "batteries-included" version of `ApolloServer`  is less configurable, but includes useful defaults to reduce setup time.
->>>>>>> eca61a86d (Continue documenting startStandaloneServer)
->>>>>>> f5dd9d4c6 (Continue documenting startStandaloneServer)
-=======
-Apollo Server 3 has a "batteries-included" `apollo-server` package designed to help developers get started quickly. The "batteries-included" version of `ApolloServer`  is less configurable, but includes useful defaults to reduce setup time.
->>>>>>> 3128a127b (Rebase and get up to date)
-=======
 The below features have changed in Apollo Server 4.
 
-<<<<<<< HEAD
-### `startStandaloneServer` function
->>>>>>> 6f32dc062 (Add more tables)
-=======
 ### `startStandaloneServer`
->>>>>>> d03825c01 (Start execute operation)
 
 > If you are using Apollo Server 3's "batteries included" `apollo-server` package, you want to use the `startStandaloneServer` function from the `@apollo/server` package in Apollo Server 4.
 
@@ -987,134 +927,6 @@ You can now write:
   });
 ```
 
-<<<<<<< HEAD
-### `variables` and `extensions` fields
-
-Apollo Server 3 and 4 both accept `POST` requests with a JSON body. Apollo Server 3 supports an edge case where the `variables` and
-`extensions` fields inside a `POST` request's JSON-encoded body could potentially be JSON-encoded strings.
-
-Apollo Server 4 clear this up by requiring that within a `POST` request's JSON-encoded body, the `variables` and `extensions` fields must be objects (not doubly-encoded).
-
-For example, below is a valid query:
-```
-{“query”: “{ __typename }”, extensions: {“foo”: 1}}
-```
-
-Whereas this query would be invalid:
-```
-{“query”: “{ __typename }”, extensions: “{\“foo\”: 1}”}
-```
-
-### Local landing page defaults to embedded
-
-Apollo Server 4's default development landing page is now an embedded Apollo Sandbox, enabling you to run GraphQL operations with no additional CORS set up. If you want to use Apollo Server's default landing page instead, pass `ApolloServerPluginLandingPageLocalDefault({embed: false})` to the plugins for your `ApolloServer` constructor.
-
-### `CacheScope` type
-In Apollo Server 4,  `CacheScope` is now a union of strings (`PUBLIC` or `PRIVATE`):
-
-```ts
-export type CacheScope = 'PUBLIC' | 'PRIVATE';
-```
-
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-<<<<<<< HEAD
-### HTTP handling changes
-
-`variables` and `extensions` should not be doubly-encoded
-
-In JSON-encoded POST bodies, we expect variables and extensions (if provided) to be objects, not strings containing JSON strings of objects:
-
-This works:
-```
-{“query”: “{ __typename }”, extensions: {“foo”: 1}}
-```
-
-And this does not:
-```
-{“query”: “{ __typename }”, extensions: “{\“foo\”: 1}”}
-```
-
-
-### HTTP batching as opt-in feature
-
-Apollo Server supports [batching HTTP requests](/apollo-server/requests/#batching), which allows multiple GraphQL operations to be executed as part of a single HTTP request (sharing a single context function invocation as well).
-
-In Apollo Server 3, support for HTTP batching was on by default. In Apollo Server 4, you must explicitly enable this feature by passing `allowBatchedHttpRequests: true` to the `ApolloServer` constructor.
-
-<<<<<<< HEAD
-<!-- TODO: investigate more! -->
-
-### Plugin API changes
-
-Remove schemaHash field from GraphQLRequestContext
-This was a not particularly stable hash of the introspection JSON of a
-schema. It was different from the hash of the schema SDL used by schema
-reporting. It was created for the operation registry plugin but that
-plugin hasn't used it for a while and it was only kept around for
-backwards compatibility. So now it is gone.
-
-
-Remove debug field from GraphQLRequestContext.
-
-Remove persistedQueries field from GraphQLServerContext
-
-`GraphQLResponse` object (eg `requestContext.response`) has been refactored: the `data`, `errors`, and `extensions` fields are on a `result` sub-object. (This will change further for incremental delivery.) `data` and `extensions` are now `Record<string, unknown>` rather than `Record<string, any>` so more casts may be needed. `GraphQLRequestContext.response` and `GraphQLResponse.http` are now always set.
-
-requestDidStart hooks are called in parallel rather than in series.
-
-## New APIs
-=======
-Note that HTTP batching is not supported by all GraphQL clients and does not currently support incremental delivery. HTTP batching can save performance by sharing a context object across operations, but can also make reasoning about the amount of work any given request can do harder.
->>>>>>> 3128a127b (Rebase and get up to date)
-
-### `addPlugin` function
-Apollo Server 4 introduces a new public function on the `ApolloServer` class, `addPlugin`. The `addPlugin` function enables you to add plugins to `ApolloServer` _before_ you start a server (i.e., before calling `server.start()`):
-
-```ts
-import express from 'express';
-import http from 'http';
-import cors from 'cors';
-import { json } from 'body-parser';
-import { ApolloServer, ApolloServerPluginDrainHttpServer } from '@apollo/server';
-// TODO: Double check this import
-import { expressMiddleware } from '@apollo/server/express';
-import { typeDefs, resolvers } from ('./schema');
-
-const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-});
-
-// Add our ApolloServerPluginDrainHttpServer plug in *before* starting the server
-server.addPlugin(ApolloServerPluginDrainHttpServer({ httpServer }));
-
-await server.start();
-// Set up express middleware with body-parsing and cors
-app.use(cors(), json(), expressMiddleware(server));
-await new Promise<void>((resolve) => httpServer.listen({ port: 4000 }, resolve));
-
-console.log(`🚀 Server ready at http://localhost:4000`);
-```
-
-The new `addPlugin` function is useful if you'd like to pass the server itself to a plugin’s constructor.
-=======
->>>>>>> 8e64d5171 (Up to utils)
-
-=======
->>>>>>> d03825c01 (Start execute operation)
-### `@apollo/server-plugin-operation-registry`
-The plugin `apollo-server-plugin-operation-registry` has been renamed to `@apollo/server-plugin-operation-registry`.
-
-### New wrapper around `keyV`
-We've decided to continue maintaining our own cache interface and instead offer a small wrapper around [`keyv`](https://www.npmjs.com/package/keyv) that users can choose to use themselves. This nicely guarantees our API regardless of the choices made by `keyv` (we just have to update the wrapper if anything changes).
-=======
-This means you can write `PUBLIC` directly when referring to `CacheScope` (i.e., instead of `CacheScope.Public`).
->>>>>>> d6bd791b7 (keyv phrasing)
-
-=======
->>>>>>> d43956fe9 (Another pass over migration)
 ### Default cache is bounded
 
 By default, Apollo Server uses an in-memory cache backend to optimize the performance of several features (including APQs, the response cache plugin, and `RESTDataSource`).
@@ -1201,7 +1013,6 @@ The `data` and `extensions` fields are both type `Record<string, unknown>`, rath
 
 ### `@apollo/server-plugin-operation-registry`
 The plugin `apollo-server-plugin-operation-registry` has been renamed `@apollo/server-plugin-operation-registry`.
-
 
 
 
