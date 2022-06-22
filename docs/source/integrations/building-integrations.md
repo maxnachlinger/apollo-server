@@ -6,9 +6,9 @@ description: ""
 One of the driving forces behind Apollo Server 4 is the creation of a stable, well-defined API for processing HTTP requests and responses. Apollo Server 4's API enables external collaborators (like you) to build integrations with Apollo Server in their web framework of choice.
 
 The primary responsibility of an Apollo Server integration is to translate requests and responses between a web framework's native format to the format that `ApolloServer` uses.
-## Patterns for integrations
+## Integration patterns
 
-<!-- TODO: fix link to point to main once merged  -->
+<!-- TODO: fix link to point to main once version-4 is merged  -->
 > See the [`expressMiddleware` function](https://github.com/apollographql/apollo-server/blob/36482f5eb56a0421c1eb47e3ebf0e60e033573ab/packages/server/src/express/index.ts) for an example of integrating [Express](https://github.com/expressjs/express) with Apollo Server.
 
 Your integration should expect to intake an `ApolloServer` instance _after_ that instance has called the `server.start()` method:
@@ -67,5 +67,5 @@ await new Promise<void>((resolve) => httpServer.listen({ port: 4000 }, resolve))
 console.log(`🚀 Server ready at http://localhost:4000`);
 ```
 
-Note, that your integration is responsible for setting up [body-parser](https://www.npmjs.com/package/body-parser) and [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) configuration.
+Note that your integration is responsible for setting up [body-parser](https://www.npmjs.com/package/body-parser) and [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) configuration.
 
