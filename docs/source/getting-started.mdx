@@ -10,7 +10,7 @@ This tutorial helps you:
 * Run an instance of Apollo Server that lets you execute queries against your schema
 
 This tutorial assumes that you are familiar with the command line and
-JavaScript and have installed a recent Node.js (14+) version. Additionally, for those interested, this tutorial includes an optional section describing how to set up Apollo Server with TypeScript.
+JavaScript and have installed a recent Node.js (16+) version. Additionally, for those interested, this tutorial includes an optional section describing how to set up Apollo Server with TypeScript.
 
 <!-- TODO: before releasing, double-check imports & links -->
 
@@ -21,7 +21,6 @@ JavaScript and have installed a recent Node.js (14+) version. Additionally, for 
   ```bash
   mkdir graphql-server-example
   cd graphql-server-example
-  mkdir src
   ```
 
 2. Initialize a new Node.js project with `npm` (or another package manager you
@@ -47,33 +46,29 @@ your project's `node_modules` directory:
   npm install @apollo/server graphql graphql-tag
 ```
 
-If you are using JavaScript, create a `src/index.js` file. If you plan to use TypeScript, create a `src/index.ts` file:
+Follow the instructions below to set up with either TypeScript or JavaScript:
+
+<ExpansionPanel title="Set up with TypeScript">
+
+#### Set up with TypeScript
+
+1. Create a `src` directory with an empty `index.ts` file to contain **all** of the code for our example application:
 
 ```bash
-  touch src/index.ts
+mkdir src
+touch src/index.ts
 ```
 
-To keep things simple, this `index` file will contain **all** of the code for our example application.
+2. Run the following command to install the `typescript` package into your project's dev dependencies:
 
-<ExpansionPanel title="Learn how to set up TypeScript (Optional)">
-
-#### Set up TypeScript
-
-1. If you do not already have TypeScript installed on your computer, install it globally now:
 ```bash
-npm install -g typescript
+npm install --save-dev typescript
 ```
 
-2. Run the following command to install TypeScript into your project's dependencies:
+3. Next, create a `tsconfig.json` file in your project:
 
 ```bash
-npm install typescript
-```
-
-3. You can now run the `tsc --init` command, which creates a `tsconfig.json` file in your project:
-
-```bash
-tsc --init
+touch tsconfig.json
 ```
 
 4. The `tsconfig.json` file enables you to configure how TypeScript will compile your code. Add the following configuration to your `tsconfig.json` file:
@@ -110,16 +105,27 @@ The above `start` script tells TypeScript to compile your code into JavaScript b
 
 </ExpansionPanel>
 
-If you are using JavaScript (i.e., not TypeScript), add the following script to your `package.json`:
+<ExpansionPanel title="Set up with JavaScript">
+
+#### Set up with JavaScript
+
+If you are using JavaScript, create a `index.js` file that will contain **all** of the code for our example application:
+
+```bash
+  touch index.js
+```
+
+Then add the following script to your `package.json`:
 
 ```json title="package.json"
 {
   "scripts": {
     "start": "node index.js"
   },
-  // other dependencies
 }
 ```
+
+</ExpansionPanel>
 
 ## Step 3: Define your GraphQL schema
 
