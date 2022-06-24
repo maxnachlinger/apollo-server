@@ -11,7 +11,7 @@ The primary responsibility of an Apollo Server integration is to translate reque
 <!-- TODO: fix link to point to main once version-4 is merged  -->
 > See the [`expressMiddleware` function](https://github.com/apollographql/apollo-server/blob/36482f5eb56a0421c1eb47e3ebf0e60e033573ab/packages/server/src/express/index.ts) for an example of integrating [Express](https://github.com/expressjs/express) with Apollo Server.
 
-Your integration should expect to intake an `ApolloServer` instance _after_ that instance has called the `server.start()` method:
+Your integration should expect to accept an `ApolloServer` instance _after_ that instance has called the `server.start()` method:
 
 ```ts
 // Create a new instance of ApolloServer
