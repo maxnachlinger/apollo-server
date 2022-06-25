@@ -86,22 +86,24 @@ Below is an example of setting up `cors` and `body-parser` using the [`expressMi
 <MultiCodeBlock>
 
 ```ts
-import { ApolloServer, expressMiddleware } from '@apollo/server';
+import { ApolloServer, ApolloServerPluginDrainHttpServer } from '@apollo/server';
+import { expressMiddleware } from '@apollo/server/express4';
 import express from 'express';
 import http from 'http';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 
+// Set up Express
+const app = express();
+const httpServer = http.createServer(app);
+
 // Set up Apollo Server
 const server = new ApolloServer({
   typeDefs,
   resolvers,
+  plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
 });
 await server.start();
-
-// Set up Express
-const app = express();
-const httpServer = http.createServer(app);
 
 // We set up our Express server's middleware:
 // 1. using the `cors` and `body-parser` libraries, and
@@ -455,18 +457,22 @@ import express from 'express';
 import http from 'http';
 import cors from 'cors';
 import { json } from 'body-parser';
-import { ApolloServer, expressMiddleware } from '@apollo/server';
+import { ApolloServer, ApolloServerPluginDrainHttpServer } from '@apollo/server';
+import { expressMiddleware } from '@apollo/server/express4';
 import { typeDefs, resolvers } from ('./schema');
 
-const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-});
-
+// Set up Express
 const app = express();
 const httpServer = http.createServer(app);
 
+// Set up Apollo Server
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+  plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+});
 await server.start();
+
 // Pass an ApolloServer instance to the expressMiddleware function
 app.use(cors(), json(), expressMiddleware(server));
 await new Promise<void>((resolve) => httpServer.listen({ port: 4000 }, resolve));
@@ -479,18 +485,22 @@ import express from 'express';
 import http from 'http';
 import cors from 'cors';
 import { json } from 'body-parser';
-import { ApolloServer, expressMiddleware } from '@apollo/server';
+import { ApolloServer, ApolloServerPluginDrainHttpServer } from '@apollo/server';
+import { expressMiddleware } from '@apollo/server/express4';
 import { typeDefs, resolvers } from ('./schema');
 
-const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-});
-
+// Set up Express
 const app = express();
 const httpServer = http.createServer(app);
 
+// Set up Apollo Server
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+  plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+});
 await server.start();
+
 // Pass an ApolloServer instance to the expressMiddleware function
 app.use(cors(), json(), expressMiddleware(server));
 await new Promise((resolve) => httpServer.listen({ port: 4000 }, resolve));
@@ -718,7 +728,7 @@ The `context` function's syntax is similar for the `expressMiddleware` function:
 
 <MultiCodeBlock>
 
-```ts {18-20}
+```ts {17-19}
 interface MyContext {
   token: String;
 }
@@ -730,7 +740,6 @@ const server = new ApolloServer<MyContext>({
 
 await server.start();
 const app = express();
-const httpServer = http.createServer(app);
 
 app.use(
   // A named context function is required if you are not
@@ -743,7 +752,7 @@ app.use(
 );
 ```
 
-```js {12-14}
+```js {11-13}
 const server = new ApolloServer({
   typeDefs,
   resolvers,
@@ -751,7 +760,6 @@ const server = new ApolloServer({
 
 await server.start();
 const app = express();
-const httpServer = http.createServer(app);
 
 app.use(
   expressMiddleware(server, {
@@ -924,7 +932,8 @@ import express from 'express';
 import http from 'http';
 import cors from 'cors';
 import { json } from 'body-parser';
-import { ApolloServer, ApolloServerPluginDrainHttpServer, expressMiddleware } from '@apollo/server';
+import { ApolloServer, ApolloServerPluginDrainHttpServer } from '@apollo/server';
+import { expressMiddleware } from '@apollo/server/express4';
 
 import { typeDefs, resolvers } from ('./schema');
 
@@ -952,7 +961,8 @@ import express from 'express';
 import http from 'http';
 import cors from 'cors';
 import { json } from 'body-parser';
-import { ApolloServer, ApolloServerPluginDrainHttpServer, expressMiddleware } from '@apollo/server';
+import { ApolloServer, ApolloServerPluginDrainHttpServer } from '@apollo/server';
+import { expressMiddleware } from '@apollo/server/express4';
 
 import { typeDefs, resolvers } from ('./schema');
 
