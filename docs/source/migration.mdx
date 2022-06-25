@@ -507,16 +507,22 @@ Note, the `expressMiddleware` function has no runtime dependency on `express` (o
 
 In Apollo Server 3, our approach to creating serverless frameworks involves subclassing `ApolloServer` and overriding the [`serverlessFramework()`](https://github.com/apollographql/apollo-server/blob/5188b1ee408b5e2a983662b0f3a15283c071e522/packages/apollo-server-core/src/ApolloServer.ts#L813) method.
 
-In Apollo Server 4,  serverless integrations differentiate themselves from other integrations by calling the `startInBackgroundHandlingStartupErrorsByLoggingAndFailingAllRequests()` method. The length of this function's name discourages its use when building non-serverless apps (because the shorter `await server.start()` is available).
+In Apollo Server 4,  serverless integrations differentiate themselves by using the `startInBackgroundHandlingStartupErrorsByLoggingAndFailingAllRequests` method. The length of this function's name discourages its use when building non-serverless apps.
 
-This means those using serverless middleware shouldn't have to call any start-related functions, like so:
+This means the users of serverless integrations shouldn't call any start-related functions before passing in an `ApolloServer` instance:
 
 ```ts
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+});
+
 exports.handler = lambdaHandler(server);
 ```
-In the above example, the `lambdaHandler` serverless middleware function should call
-`startInBackgroundHandlingStartupErrorsByLoggingAndFailingAllRequests`
-for you.
+
+In the above example, the `lambdaHandler` serverless middleware function should call the
+`server.startInBackgroundHandlingStartupErrorsByLoggingAndFailingAllRequests()`
+method.
 
 Apollo Server 4's other non-serverless framework integrations expect the developer to await the `server.start()` method, before validating that the server has started by calling `server.assertStarted()`.
 
