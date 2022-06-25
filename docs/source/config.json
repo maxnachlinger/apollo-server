@@ -12,11 +12,11 @@
     "Introduction": "/",
     "Get started": "/getting-started",
       "New in v4": {
-      "Migrating to Apollo Server 4": "/migration",
-      "Changelog": "https://github.com/apollographql/apollo-server/blob/main/CHANGELOG.md"
-    },
+        "Migrating to Apollo Server 4": "/migration",
+        "Changelog": "https://github.com/apollographql/apollo-server/blob/main/CHANGELOG.md"
+      },
       "Integrations": {
-      "Building integrations": "/integrations/building-integrations"
-    }
+        "Building integrations": "/integrations/building-integrations"
+      }
   }
 }
