@@ -362,6 +362,40 @@ new ApolloServer({
 })
 ```
 
+### `mocks` and `mockEntireSchema`
+In Apollo Server 3, the `mocks` and `mockEntireSchema` constructor options enabled Apollo Server to return simulated data for GraphQL operations based on your server's schema.
+
+```ts
+// Apollo Server 3 constructor
+const server = new ApolloServer({
+  typeDefs,
+  mocks: true,
+});
+```
+
+Under the hood, Apollo Server 3's mocking functionality is provided via an older version of the [`@graphql-tools/mocks`](https://www.npmjs.com/package/@graphql-tools/mock)  library.
+
+Apollo Server 4 removes both the `mocks` and `mockEntireSchema` constructor options. You can directly incorporate the `@graphql-tools/mock` package into your app, enabling you to get the most up-to-date mocking features. For more details on configuring mocks, see the [`@graphql-tools/mocks` docs](https://www.graphql-tools.com/docs/mocking).
+
+```ts {5-10}
+import { addMocksToSchema } from '@graphql-tools/mock';
+import { makeExecutableSchema } from '@graphql-tools/schema';
+
+const server = new ApolloServer({
+  schema: addMocksToSchema({
+    schema: makeExecutableSchema({ typeDefs, resolvers }),
+    // you can set preserveResolvers to false to make the server skip
+    // your resolvers and return the default mocked data
+    preserveResolvers: false,
+  }),
+});
+
+const { url } = await startStandaloneServer(server, { listen: { port: 4000 } });
+
+// Querying your server returns mocked data!
+console.log(`🚀 Server listening at: ${url}`);
+```
+
 ## Removed features
 
 Several small features have been removed from Apollo Server 4.
