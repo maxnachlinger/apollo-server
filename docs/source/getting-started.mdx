@@ -37,13 +37,11 @@ Applications that run Apollo Server require two top-level dependencies:
 * [`@apollo/server`](https://www.npmjs.com/package/@apollo/server) is the core library for Apollo Server itself, which helps you define the shape of your data and how to fetch it.
 * [`graphql`](https://npm.im/graphql) is the library used to build a GraphQL schema and execute queries against it.
 
-We'll also install the [`graphql-tag`](https://www.npmjs.com/package/graphql-tag) package, which includes a template literal tag that parses GraphQL query strings into the standard GraphQL AST.
-
 Run the following command to install all of these packages and save them in
 your project's `node_modules` directory:
 
 ```bash
-  npm install @apollo/server graphql graphql-tag
+  npm install @apollo/server graphql
 ```
 
 Follow the instructions below to set up with either TypeScript or JavaScript:
@@ -141,12 +139,35 @@ Open `index.ts` in your preferred code editor and paste the following into it:
 
 ```ts title="index.ts"
 import { ApolloServer, startStandaloneServer } from '@apollo/server';
-import { gql } from 'graphql-tag';
 
 // A schema is a collection of type definitions (hence "typeDefs")
 // that together define the "shape" of queries that are executed against
 // your data.
-const typeDefs = gql`
+const typeDefs = `#graphql
+  # Comments in GraphQL strings (such as this one) start with the hash (#) symbol.
+
+  # This "Book" type defines the queryable fields for every book in our data source.
+  type Book {
+    title: String
+    author: String
+  }
+
+  # The "Query" type is special: it lists all of the available queries that
+  # clients can execute, along with the return type for each. In this
+  # case, the "books" query returns an array of zero or more Books (defined above).
+  type Query {
+    books: [Book]
+  }
+`;
+```
+
+```js title="index.js"
+import { ApolloServer, startStandaloneServer } from '@apollo/server';
+
+// A schema is a collection of type definitions (hence "typeDefs")
+// that together define the "shape" of queries that are executed against
+// your data.
+const typeDefs = `#graphql
   # Comments in GraphQL strings (such as this one) start with the hash (#) symbol.
 
   # This "Book" type defines the queryable fields for every book in our data source.
@@ -165,6 +186,9 @@ const typeDefs = gql`
 ```
 
 </MultiCodeBlock>
+
+
+> Adding `#graphql` to the beginning of a [template literal](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals) provides GraphQL syntax highlighting in supporting IDEs.
 
 This snippet defines a simple, valid GraphQL schema. Clients will be able to execute a query named `books`, and our server will return an array of zero or more `Book`s.
 
@@ -220,8 +244,8 @@ Add the following to the bottom of your `index.ts` file:
 <MultiCodeBlock>
 
 ```ts title="index.ts"
-// Resolvers define the technique for fetching the types defined in the
-// schema. This resolver retrieves books from the "books" array above.
+// Resolvers define how to fetch the types defined in your schema.
+// This resolver retrieves books from the "books" array above.
 const resolvers = {
   Query: {
     books: () => books,
@@ -248,8 +272,10 @@ const apolloServerInstance = new ApolloServer({
   resolvers,
 });
 
-// Passing your ApolloServer instance to the `startStandaloneServer`
-// function enables you to start listening to your server
+// Passing an ApolloServer instance to the `startStandaloneServer` function:
+//  1. creates an Express app
+//  2. installs your ApolloServer instance as middleware
+//  3. prepares your app to handle incoming requests
 const { url } = await startStandaloneServer(apolloServerInstance, {
   listen: { port: 4000 },
 });
@@ -308,7 +334,7 @@ Paste this string into the Operations panel and click the blue button in the upp
 
 <img class="screenshot" src="./images/sandbox-response.png" width="400" alt="Sandbox response panel"/>
 
-> **Note:** If your server is deployed to an environment where `NODE_ENV` is set to `production`, introspection is **disabled** by default. This prevents Apollo Sandbox from working properly. To enable introspection, set `introspection: true` in the options to `ApolloServer`'s constructor.
+> **Note:** If Apollo Sandbox can't find your schema, ensure you have introspection enabled by passing `introspection: true` to the `ApolloServer` constructor. We recommend disabling introspection when using Apollo Server in a production environment.
 
 One of the most important concepts of GraphQL is that clients can choose to query _only for the fields they need_. Delete `author` from the query string and execute it again. The response updates to include only the `title` field for each book!
 
